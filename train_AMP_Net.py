@@ -21,10 +21,6 @@ class Denoiser(Module):
 
                                nn.ReLU(),
                                nn.Conv2d(32, 32, 3, padding=1))
-        self.W_h = nn.Sequential(nn.Conv2d(32, 32, 3, padding=1),
-
-                                 nn.ReLU(),
-                                 nn.Conv2d(32, 32, 3, padding=1))
         self.D = nn.Sequential(
                                nn.ReLU(),
                                nn.Conv2d(32, 32, 3, padding=1),
@@ -32,14 +28,14 @@ class Denoiser(Module):
                                nn.ReLU(),
                                nn.Conv2d(32, 1, 3, padding=1,bias=False))
 
-    def forward(self, inputs, h):
+    def forward(self, inputs):
         inputs = torch.unsqueeze(torch.reshape(torch.transpose(inputs,0,1),[-1,33,33]),dim=1)
         h = self.W_x(inputs)
         output = self.D(h)
 
         # output=inputs-output
         output = torch.transpose(torch.reshape(torch.squeeze(output),[-1,33*33]),0,1)
-        return output, h
+        return output
 
 class Deblocker(Module):
     def __init__(self):
@@ -89,7 +85,7 @@ class AMP_net_Deblock(Module):
             denoiser = self.denoisers[n]
 
             z = self.block1(X, y,step)
-            noise, h = denoiser(X, h)
+            noise = denoiser(X) - X
             X = z - torch.matmul(
                 (step * torch.matmul(self.A.t(), self.A)) - torch.eye(33 * 33).float().cuda(), noise)
 
