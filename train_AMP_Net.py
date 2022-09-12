@@ -96,7 +96,7 @@ class AMP_net_Deblock(Module):
             X = self.together(X,S,H,L)
             X = torch.cat(torch.split(X, split_size_or_sections=33, dim=1), dim=0)
             X = torch.cat(torch.split(X, split_size_or_sections=33, dim=2), dim=0)
-            X = torch.reshape(X, [-1, 33 * 33]).t()
+            X = torch.transpose(torch.reshape(X, [-1, 33 * 33]), 0, 1)
 
         X = self.together(X, S, H, L)
         return torch.unsqueeze(X, dim=1)
