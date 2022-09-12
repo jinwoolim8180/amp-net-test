@@ -34,11 +34,13 @@ class Denoiser(Module):
 
     def forward(self, inputs, h):
         inputs = torch.unsqueeze(torch.reshape(torch.transpose(inputs,0,1),[-1,33,33]),dim=1)
+        h = torch.unsqueeze(torch.reshape(torch.transpose(h, 0, 1), [-1, 33, 33]), dim=1)
         h = self.W_x(inputs) + self.W_h(h)
         output = self.D(h)
 
         # output=inputs-output
         output = torch.transpose(torch.reshape(torch.squeeze(output),[-1,33*33]),0,1)
+        h = torch.transpose(torch.reshape(torch.squeeze(h), [-1, 33 * 33]), 0, 1)
         return output, h
 
 class Deblocker(Module):
@@ -96,7 +98,7 @@ class AMP_net_Deblock(Module):
             X = self.together(X,S,H,L)
             X = torch.cat(torch.split(X, split_size_or_sections=33, dim=1), dim=0)
             X = torch.cat(torch.split(X, split_size_or_sections=33, dim=2), dim=0)
-            X = torch.transpose(torch.reshape(X, [-1, 33 * 33]), 0, 1)
+            X = torch.reshape(X, [-1, 33 * 33]).t()
 
         X = self.together(X, S, H, L)
         return torch.unsqueeze(X, dim=1)
