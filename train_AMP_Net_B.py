@@ -17,23 +17,29 @@ AMP-Net-B
 class Denoiser(Module):
     def __init__(self):
         super().__init__()
-        self.D = nn.Sequential(nn.Conv2d(1, 32, 3, padding=1),
+        self.W_x = nn.Sequential(nn.Conv2d(1, 32, 3, padding=1),
 
                                nn.ReLU(),
-                               nn.Conv2d(32, 32, 3, padding=1),
+                               nn.Conv2d(32, 32, 3, padding=1))
+        self.W_h = nn.Sequential(nn.Conv2d(32, 32, 3, padding=1),
 
+                                 nn.ReLU(),
+                                 nn.Conv2d(32, 32, 3, padding=1))
+        self.D = nn.Sequential(
                                nn.ReLU(),
                                nn.Conv2d(32, 32, 3, padding=1),
 
                                nn.ReLU(),
                                nn.Conv2d(32, 1, 3, padding=1,bias=False))
 
-    def forward(self, inputs):
+    def forward(self, inputs, h):
         inputs = torch.unsqueeze(torch.reshape(torch.transpose(inputs,0,1),[-1,33,33]),dim=1)
-        output = self.D(inputs)
+        h = self.W_x(inputs) + self.W_h(h)
+        output = self.D(h)
+
         # output=inputs-output
         output = torch.transpose(torch.reshape(torch.squeeze(output),[-1,33*33]),0,1)
-        return output
+        return output, h
 
 class Deblocker(Module):
     def __init__(self):
@@ -81,13 +87,14 @@ class AMP_net_Deblock(Module):
 
         y = self.sampling(inputs)
         X = torch.matmul(self.Q,y)
+        h = torch.zeros_like(X).to(X.device)
         for n in range(output_layers):
             step = self.steps[n]
             denoiser = self.denoisers[n]
             deblocker = self.deblocks[n]
 
             z = self.block1(X, y,step)
-            noise = denoiser(X)
+            nois, h = denoiser(X, h)
             X = z - torch.matmul(
                 (step * torch.matmul(torch.transpose(self.A,0,1), self.A)) - torch.eye(33 * 33).float().cuda(), noise)
 
