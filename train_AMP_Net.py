@@ -34,7 +34,7 @@ class Denoiser(Module):
 
     def forward(self, inputs, h):
         inputs = torch.unsqueeze(torch.reshape(torch.transpose(inputs,0,1),[-1,33,33]),dim=1)
-        h = self.W_x(inputs) + self.W_h(h)
+        h = self.W_x(inputs)
         output = self.D(h)
 
         # output=inputs-output
