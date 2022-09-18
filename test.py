@@ -182,13 +182,12 @@ if __name__ == "__main__":
             if not os.path.exists(sub_save_path):
                 os.mkdir(sub_save_path)
             sub_save_path = os.path.join(results_saving_path, str(phase))
-			if not os.path.exists(sub_save_path):
-				os.mkdir(sub_save_path)
-				
+            if not os.path.exists(sub_save_path):
+                os.mkdir(sub_save_path)
+
             path = os.path.join("results",model_name,str(CS_ratio),str(phase),"best_model.pkl")
 
             A = load_sampling_matrix(CS_ratio)
-
             model = AMP_net_Deblock(phase,A)
             model.cuda()
             model.load_state_dict(torch.load(path))
