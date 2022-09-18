@@ -82,11 +82,13 @@ class AMP_net_Deblock(Module):
         self.register_parameter("A", nn.Parameter(torch.from_numpy(A).float(),requires_grad=False))
         self.register_parameter("Q", nn.Parameter(torch.from_numpy(np.transpose(A)).float(), requires_grad=True))
         for n in range(layer_num):
-            self.denoisers.append(Denoiser())
+            self.denoisers.append(Denoiser(scale=2**(layer_num - n - 1)))
             self.register_parameter("step_" + str(n + 1), nn.Parameter(torch.tensor(1.0),requires_grad=False))
             self.steps.append(eval("self.step_" + str(n + 1)))
         for n,denoiser in enumerate(self.denoisers):
             self.add_module("denoiser_"+str(n+1),denoiser)
+        for n, deblock in enumerate(self.deblocks):
+            self.add_module("deblock_" + str(n + 1), deblock)
 
     def forward(self, inputs, output_layers):
         H = int(inputs.shape[2]/33)
@@ -95,11 +97,12 @@ class AMP_net_Deblock(Module):
 
         y = self.sampling(inputs)
         X = torch.matmul(self.Q,y)
-        z = torch.zeros_like(y).to(y.device)
+        z = None
         h = None
         for n in range(output_layers):
             step = self.steps[n]
             denoiser = self.denoisers[n]
+            deblocker = self.deblocks[n]
 
             for i in range(20):
                 r, z = self.block1(X, y, z, step)
@@ -108,6 +111,7 @@ class AMP_net_Deblock(Module):
                 (step * torch.matmul(self.A.t(), self.A)) - torch.eye(33 * 33).float().cuda(), noise)
 
             X = self.together(X,S,H,L)
+            X = X - deblocker(X)
             X = torch.cat(torch.split(X, split_size_or_sections=33, dim=1), dim=0)
             X = torch.cat(torch.split(X, split_size_or_sections=33, dim=2), dim=0)
             X = torch.reshape(X, [-1, 33 * 33]).t()

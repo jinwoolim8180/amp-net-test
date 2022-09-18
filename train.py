@@ -11,7 +11,6 @@ from torch.autograd import Variable
 from model.amp import AMP_net_Deblock
 
 """
-No mask training, no deblocking
 AMP-Net-K
 """
 
