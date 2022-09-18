@@ -50,7 +50,7 @@ class Denoiser(Module):
             if self.scale == 1:
                 size = (33, 33)
             h = h + F.interpolate(self.W_r(residual), size=size)
-        output = self.W_2(F.interpolate(h, scale_factor=self.scale))
+        output = self.W_2(F.interpolate(h, size=(33, 33)))
 
         # output=inputs-output
         output = torch.reshape(torch.squeeze(output), [-1, 33*33]).t()
@@ -129,7 +129,6 @@ class AMP_net_Deblock(Module):
         # inputs = torch.squeeze(inputs)
         # inputs = torch.reshape(inputs,[-1,32*32])
         inputs = torch.squeeze(inputs,dim=1)
-        print(inputs.shape)
         inputs = torch.cat(torch.split(inputs, split_size_or_sections=33, dim=1), dim=0)
         inputs = torch.cat(torch.split(inputs, split_size_or_sections=33, dim=2), dim=0)
         inputs = torch.transpose(torch.reshape(inputs, [-1, 33*33]),0,1)
