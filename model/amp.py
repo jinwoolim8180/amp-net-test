@@ -86,7 +86,7 @@ class AMP_net_Deblock(Module):
         self.register_parameter("A", nn.Parameter(torch.from_numpy(A).float(),requires_grad=False))
         self.register_parameter("Q", nn.Parameter(torch.from_numpy(np.transpose(A)).float(), requires_grad=True))
         for n in range(layer_num):
-            self.denoisers.append(Denoiser(scale=2**(layer_num // 3 - n)))
+            self.denoisers.append(Denoiser(scale=2**(2 - n // 3)))
             self.deblocks.append(Deblocker())
             self.register_parameter("step_" + str(n + 1), nn.Parameter(torch.tensor(1.0),requires_grad=False))
             self.steps.append(eval("self.step_" + str(n + 1)))
