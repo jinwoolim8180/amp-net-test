@@ -49,7 +49,7 @@ class Denoiser(Module):
             size = (8, 8)
             if self.scale == 1:
                 size = (16, 16)
-                print(self.scale)
+            print(self.scale)
             print(h.shape)
             h = h + F.interpolate(self.W_r(residual), size=size)
         output = self.W_2(F.interpolate(h, size=(33, 33)))
