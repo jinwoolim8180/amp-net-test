@@ -178,10 +178,10 @@ if __name__ == "__main__":
         for phase in Phases:
             if not os.path.exists(save_path):
                 os.mkdir(save_path)
-            sub_save_path = os.path.join(results_saving_path, str(CS_ratio))
+            sub_save_path = os.path.join(save_path, str(CS_ratio))
             if not os.path.exists(sub_save_path):
                 os.mkdir(sub_save_path)
-            sub_save_path = os.path.join(results_saving_path, str(phase))
+            sub_save_path = os.path.join(save_path, str(phase))
             if not os.path.exists(sub_save_path):
                 os.mkdir(sub_save_path)
 
