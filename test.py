@@ -159,8 +159,8 @@ def get_val_result(model,CS_ratio,phaseNum,save_path, is_cuda=True):
             PSNR_All[0, img_no] = rec_PSNR
             rec_SSIM = compute_ssim(aaa, Iorg)
             SSIM_All[0, img_no] = rec_SSIM
-			imgname_for_save = (imgName.split('/')[-1]).split('.')[0]
-			imsave(os.path.join(save_path,imgname_for_save+'_'+str(rec_PSNR)+'_'+str(rec_SSIM)+'.jpg'),aaa)
+            imgname_for_save = ((imgName.split('/')[-1]).split('.'))[0]
+            imsave(os.path.join(save_path,imgname_for_save+'_'+str(rec_PSNR)+'_'+str(rec_SSIM)+'.jpg'),aaa)
 
     return np.mean(PSNR_All), np.mean(SSIM_All)
 
