@@ -51,9 +51,9 @@ def get_val_result(model,PhaseNum, is_cuda=True):
             imgName = test_set_path[img_no]  
 
             [Iorg, row, col, Ipad, row_new, col_new] = imread_CS_py(imgName)
-            Icol = img2col_py(Ipad, 32) / 255.0  
+            Icol = img2col_py(Ipad, 33) / 255.0
             Ipad /= 255.0
-            # Img_input = np.dot(Icol, Phi_input)  
+            # Img_input = np.dot(Icol, Phi_input)
             # Img_output = Icol
             if is_cuda:
                 inputs = Variable(torch.from_numpy(Ipad.astype('float32')).cuda())
@@ -70,7 +70,7 @@ def get_val_result(model,PhaseNum, is_cuda=True):
 
             images_recovered = outputs[0:row,0:col]
             # images_recovered = col2im_CS_py(output, row, col, row_new, col_new)
-            rec_PSNR = psnr(images_recovered * 255, Iorg)  
+            rec_PSNR = psnr(images_recovered * 255, Iorg)
             PSNR_All[0, img_no] = rec_PSNR
 
     out = np.mean(PSNR_All)
@@ -89,8 +89,8 @@ def get_Q(data_set,A):
     data_loader = torch.utils.data.DataLoader(data_set, batch_size=len(data_set),
                                 shuffle=True, num_workers=2)
     for data, target in data_loader:
-        data = torch.transpose(torch.reshape(data, [-1, 32 * 32]), 0, 1)
-        target = torch.transpose(torch.reshape(target, [-1, 32 * 32]), 0, 1)
+        data = torch.transpose(torch.reshape(data, [-1, 33 * 33]), 0, 1)
+        target = torch.transpose(torch.reshape(target, [-1, 33 * 33]), 0, 1)
         y = torch.matmul(A.float(),data.float())
         x = target.float()
         if n==0:

@@ -41,7 +41,7 @@ class Denoiser(Module):
         self.W_2 = nn.Conv2d(32, 1, 3, padding=1, bias=False)
 
     def forward(self, inputs, residual=None):
-        inputs = torch.unsqueeze(torch.reshape(inputs.t(), [-1, 32, 32]), dim=1)
+        inputs = torch.unsqueeze(torch.reshape(inputs.t(), [-1, 33, 33]), dim=1)
         h = self.W_1(inputs)
         h = F.max_pool2d(h, kernel_size=self.scale, stride=self.scale)
         h = self.res(h)
@@ -50,7 +50,7 @@ class Denoiser(Module):
         output = self.W_2(F.interpolate(h, scale_factor=self.scale))
 
         # output=inputs-output
-        output = torch.reshape(torch.squeeze(output), [-1, 32*32]).t()
+        output = torch.reshape(torch.squeeze(output), [-1, 33*33]).t()
         return output, h
 
 class Deblocker(Module):
@@ -93,8 +93,8 @@ class AMP_net_Deblock(Module):
             self.add_module("deblock_" + str(n + 1), deblock)
 
     def forward(self, inputs, output_layers):
-        H = int(inputs.shape[2]/32)
-        L = int(inputs.shape[3]/32)
+        H = int(inputs.shape[2]/33)
+        L = int(inputs.shape[3]/33)
         S = inputs.shape[0]
 
         y = self.sampling(inputs)
@@ -110,13 +110,13 @@ class AMP_net_Deblock(Module):
                 r, z = self.block1(X, y, z, step)
             noise, h = denoiser(X, h)
             X = r - torch.matmul(
-                (step * torch.matmul(self.A.t(), self.A)) - torch.eye(32 * 32).float().cuda(), noise)
+                (step * torch.matmul(self.A.t(), self.A)) - torch.eye(33 * 33).float().cuda(), noise)
 
             X = self.together(X,S,H,L)
             X = X - deblocker(X)
-            X = torch.cat(torch.split(X, split_size_or_sections=32, dim=1), dim=0)
-            X = torch.cat(torch.split(X, split_size_or_sections=32, dim=2), dim=0)
-            X = torch.reshape(X, [-1, 32 * 32]).t()
+            X = torch.cat(torch.split(X, split_size_or_sections=33, dim=1), dim=0)
+            X = torch.cat(torch.split(X, split_size_or_sections=33, dim=2), dim=0)
+            X = torch.reshape(X, [-1, 33 * 33]).t()
 
         X = self.together(X, S, H, L)
         return torch.unsqueeze(X, dim=1)
@@ -127,9 +127,9 @@ class AMP_net_Deblock(Module):
         # inputs = torch.reshape(inputs,[-1,32*32])
         inputs = torch.squeeze(inputs,dim=1)
         print(inputs.shape)
-        inputs = torch.cat(torch.split(inputs, split_size_or_sections=32, dim=1), dim=0)
-        inputs = torch.cat(torch.split(inputs, split_size_or_sections=32, dim=2), dim=0)
-        inputs = torch.transpose(torch.reshape(inputs, [-1, 32*32]),0,1)
+        inputs = torch.cat(torch.split(inputs, split_size_or_sections=33, dim=1), dim=0)
+        inputs = torch.cat(torch.split(inputs, split_size_or_sections=33, dim=2), dim=0)
+        inputs = torch.transpose(torch.reshape(inputs, [-1, 33*33]),0,1)
         outputs = torch.matmul(self.A, inputs)
         return outputs
 
@@ -144,7 +144,7 @@ class AMP_net_Deblock(Module):
         return outputs, z
 
     def together(self,inputs,S,H,L):
-        inputs = torch.reshape(torch.transpose(inputs,0,1),[-1,32,32])
+        inputs = torch.reshape(torch.transpose(inputs,0,1),[-1,33,33])
         inputs = torch.cat(torch.split(inputs, split_size_or_sections=H*S, dim=0), dim=2)
         inputs = torch.cat(torch.split(inputs, split_size_or_sections=S, dim=0), dim=1)
         return inputs
