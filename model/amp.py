@@ -46,9 +46,10 @@ class Denoiser(Module):
         h = F.max_pool2d(h, kernel_size=self.scale, stride=self.scale)
         h = self.res(h)
         if residual is not None:
-            size = (16, 16)
+            size = (8, 8)
             if self.scale == 1:
-                size = (33, 33)
+                size = (16, 16)
+            print(h.shape)
             h = h + F.interpolate(self.W_r(residual), size=size)
         output = self.W_2(F.interpolate(h, size=(33, 33)))
 
