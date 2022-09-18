@@ -126,7 +126,6 @@ class AMP_net_Deblock(Module):
         # inputs = torch.squeeze(inputs)
         # inputs = torch.reshape(inputs,[-1,32*32])
         inputs = torch.squeeze(inputs,dim=1)
-        print(inputs.shape)
         inputs = torch.cat(torch.split(inputs, split_size_or_sections=32, dim=1), dim=0)
         inputs = torch.cat(torch.split(inputs, split_size_or_sections=32, dim=2), dim=0)
         inputs = torch.transpose(torch.reshape(inputs, [-1, 32*32]),0,1)
