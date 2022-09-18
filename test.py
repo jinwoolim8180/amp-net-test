@@ -171,17 +171,17 @@ if __name__ == "__main__":
     Phases = [2,4,6,9]
     phase = 6
 	
-	save_path = "./results/generated_images"
+    save_path = "./results/generated_images"
 
 	
     for CS_ratio in CS_ratios:
         for phase in Phases:
-		    if not os.path.exists(save_path):
-				os.mkdir(save_path)
-			sub_save_path = os.path.join(results_saving_path, str(CS_ratio))
-			if not os.path.exists(sub_save_path):
-				os.mkdir(sub_save_path)
-			sub_save_path = os.path.join(results_saving_path, str(phase))
+            if not os.path.exists(save_path):
+                os.mkdir(save_path)
+            sub_save_path = os.path.join(results_saving_path, str(CS_ratio))
+            if not os.path.exists(sub_save_path):
+                os.mkdir(sub_save_path)
+            sub_save_path = os.path.join(results_saving_path, str(phase))
 			if not os.path.exists(sub_save_path):
 				os.mkdir(sub_save_path)
 				
