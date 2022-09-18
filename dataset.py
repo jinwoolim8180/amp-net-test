@@ -75,7 +75,7 @@ class dataset():
         #     torch.save(test_set, f)
         print("Successfully packaged!")
     def get_data_random(self,data, num):
-        im_size = 33
+        im_size = 32
         h = data.shape[0]
         l = data.shape[1]
         inputs = []
