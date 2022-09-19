@@ -31,34 +31,54 @@ class ResBlock(Module):
         return self.relu(output)
 
 
-class Denoiser(Module):
+class Denoiser_down(Module):
     def __init__(self, n_stage=3, scale=1):
         super().__init__()
         self.scale = scale
         self.W_1 = nn.Conv2d(1, 32, 3, padding=1, bias=False)
         self.res_1 = nn.Sequential(*[ResBlock(32) for _ in range(n_stage)])
         self.res_2 = nn.Sequential(*[ResBlock(32) for _ in range(n_stage)])
-        self.W_r = ResBlock(32)
         self.W_2 = nn.Conv2d(32, 1, 3, padding=1, bias=False)
 
     def forward(self, inputs, residual=None):
         inputs = torch.unsqueeze(torch.reshape(inputs.t(), [-1, 33, 33]), dim=1)
         h = self.W_1(inputs)
         output = self.res_2(h)
-        h = F.max_pool2d(h, kernel_size=self.scale, stride=self.scale)
-        h = self.res_1(h)
         if residual is not None:
-            size = (8, 8)
-            if self.scale == 1:
-                size = (33, 33)
-            elif self.scale == 2:
-                size = (16, 16)
-            h = h + self.W_r(F.interpolate(residual, size=size))
+            h = F.max_pool2d(residual, kernel_size=self.scale, stride=self.scale)
+            h = self.res_1(h)
         output = self.W_2(output + F.interpolate(h, size=(33, 33)))
 
         # output=inputs-output
         output = torch.reshape(torch.squeeze(output), [-1, 33*33]).t()
         return output, h
+
+
+class Denoiser_up(Module):
+    def __init__(self, n_stage=3, scale=1):
+        super().__init__()
+        self.scale = scale
+        self.W_1 = nn.Conv2d(1, 32, 3, padding=1, bias=False)
+        self.res_1 = nn.Sequential(*[ResBlock(32) for _ in range(n_stage)])
+        self.res_2 = nn.Sequential(*[ResBlock(32) for _ in range(n_stage)])
+        self.W_2 = nn.Conv2d(32, 1, 3, padding=1, bias=False)
+
+    def forward(self, inputs, down=None, skip=None):
+        inputs = torch.unsqueeze(torch.reshape(inputs.t(), [-1, 33, 33]), dim=1)
+        h = self.W_1(inputs)
+        output = self.res_2(h)
+        if down is not None and skip is not None:
+            size = (33, 33)
+            if self.scale == 4:
+                size = (16, 16)
+            h = F.interpolate(down, size=size)
+            h = skip + self.res_1(h)
+        output = self.W_2(output + F.interpolate(h, size=(33, 33)))
+
+        # output=inputs-output
+        output = torch.reshape(torch.squeeze(output), [-1, 33*33]).t()
+        return output, h
+
 
 class Deblocker(Module):
     def __init__(self):
@@ -90,10 +110,10 @@ class AMP_net_Deblock(Module):
         self.register_parameter("A", nn.Parameter(torch.from_numpy(A).float(),requires_grad=False))
         self.register_parameter("Q", nn.Parameter(torch.from_numpy(np.transpose(A)).float(), requires_grad=True))
         for n in range(layer_num):
-            if n < layer_num - layer_num % 3:
-                self.denoisers.append(Denoiser(scale=2**(2 - n % 3)))
+            if n < 3:
+                self.denoisers.append(Denoiser_down(scale=2**n))
             else:
-                self.denoisers.append(Denoiser(scale=2**(layer_num % 3 - n % 3 - 1)))
+                self.denoisers.append(Denoiser_up(scale=2**(layer_num - 1 - n)))
             self.deblockers.append(Deblocker())
             self.register_parameter("step_" + str(n + 1), nn.Parameter(torch.tensor(1.0),requires_grad=False))
             self.steps.append(eval("self.step_" + str(n + 1)))
@@ -110,7 +130,8 @@ class AMP_net_Deblock(Module):
         y = self.sampling(inputs)
         X = torch.matmul(self.Q,y)
         z = None
-        h = None
+        residual = [None]
+        down = None
         for n in range(output_layers):
             step = self.steps[n]
             denoiser = self.denoisers[n]
@@ -118,7 +139,12 @@ class AMP_net_Deblock(Module):
 
             for i in range(20):
                 r, z = self.block1(X, y, z, step)
-            noise, h = denoiser(X, h)
+            if n < 3:
+                noise, h = denoiser(X, residual[-1])
+                residual.append(h)
+                down = residual[-1]
+            else:
+                noise, down = denoiser(X, down, residual[output_layers - 1 - n])
             X = r - torch.matmul(
                 (step * torch.matmul(self.A.t(), self.A)) - torch.eye(33 * 33).float().cuda(), noise)
 
