@@ -95,8 +95,6 @@ class AMP_net_Deblock(Module):
             self.steps.append(eval("self.step_" + str(n + 1)))
         for n,denoiser in enumerate(self.denoisers):
             self.add_module("denoiser_"+str(n+1),denoiser)
-        for n, deblock in enumerate(self.deblocks):
-            self.add_module("deblock_" + str(n + 1), deblock)
 
     def forward(self, inputs, output_layers):
         H = int(inputs.shape[2]/33)
