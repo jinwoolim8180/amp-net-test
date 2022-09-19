@@ -92,7 +92,6 @@ class AMP_net_Deblock(Module):
                 self.denoisers.append(Denoiser(scale=2**(2 - n % 3)))
             else:
                 self.denoisers.append(Denoiser(scale=2**(layer_num % 3 - n % 3 - 1)))
-            self.deblocks.append(Deblocker())
             self.register_parameter("step_" + str(n + 1), nn.Parameter(torch.tensor(1.0),requires_grad=False))
             self.steps.append(eval("self.step_" + str(n + 1)))
         for n,denoiser in enumerate(self.denoisers):
@@ -121,7 +120,6 @@ class AMP_net_Deblock(Module):
                 (step * torch.matmul(self.A.t(), self.A)) - torch.eye(33 * 33).float().cuda(), noise)
 
             X = self.together(X,S,H,L)
-            X = X - deblocker(X)
             X = torch.cat(torch.split(X, split_size_or_sections=33, dim=1), dim=0)
             X = torch.cat(torch.split(X, split_size_or_sections=33, dim=2), dim=0)
             X = torch.reshape(X, [-1, 33 * 33]).t()
