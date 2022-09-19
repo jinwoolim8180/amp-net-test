@@ -53,7 +53,6 @@ class Deblocker(Module):
         super().__init__()
         self.D = nn.Sequential(nn.Conv2d(1, 32, 3, padding=1),
                                ResBlock(32),
-                               ResBlock(32),
                                nn.Conv2d(32, 1, 3, padding=1,bias=False))
 
     def forward(self, inputs):
