@@ -54,7 +54,7 @@ class Denoiser(Module):
             elif self.scale == 2:
                 size = (16, 16)
             h = h + self.W_r(F.interpolate(residual, size=size))
-        output = output + self.W_2(F.interpolate(h, size=(33, 33)))
+        output = self.W_2(output + F.interpolate(h, size=(33, 33)))
 
         # output=inputs-output
         output = torch.reshape(torch.squeeze(output), [-1, 33*33]).t()
@@ -114,7 +114,6 @@ class AMP_net_Deblock(Module):
             for i in range(20):
                 r, z = self.block1(X, y, z, step)
             noise, h = denoiser(X, h)
-            print(noise.shape)
             X = r - torch.matmul(
                 (step * torch.matmul(self.A.t(), self.A)) - torch.eye(33 * 33).float().cuda(), noise)
 
