@@ -70,6 +70,7 @@ class AMP_net_Deblock(Module):
         self.steps = []
         self.register_parameter("A", nn.Parameter(torch.from_numpy(A).float(),requires_grad=False))
         self.register_parameter("Q", nn.Parameter(torch.from_numpy(np.transpose(A)).float(), requires_grad=True))
+        self.fc = nn.Parameter(self.A, requires_grad=True)
         for n in range(layer_num):
             self.onsagers.append(Onsager())
             self.deblockers.append(Deblocker())
@@ -120,7 +121,7 @@ class AMP_net_Deblock(Module):
     def block1(self, X, y, z, step, onsager):
         # X = torch.squeeze(X)
         # X = torch.transpose(torch.reshape(X, [-1, 32 * 32]),0,1)
-        z = y - torch.matmul(self.A, X + onsager)
+        z = y - torch.matmul(self.A, X) + torch.matmul(self.fc, onsager)
         outputs = torch.matmul(self.A.t(), z)
         outputs = step * outputs + X
         # outputs = torch.unsqueeze(torch.reshape(torch.transpose(outputs,0,1),[-1,32,32]),dim=1)
