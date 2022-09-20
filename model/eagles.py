@@ -95,7 +95,7 @@ class AMP_net_Deblock(Module):
             if n < 3:
                 self.denoisers.append(Denoiser(scale=2**n))
             else:
-                self.denoisers.append(Denoiser(scale=4))
+                self.denoisers.append(Denoiser(scale=2))
             self.deblockers.append(Deblocker())
             self.register_parameter("step_" + str(n + 1), nn.Parameter(torch.tensor(1.0),requires_grad=False))
             self.steps.append(eval("self.step_" + str(n + 1)))
