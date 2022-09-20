@@ -149,7 +149,7 @@ class AMP_net_Deblock(Module):
                 (step * torch.matmul(self.A.t(), self.A)) - torch.eye(33 * 33).float().cuda(), noise)
 
             X = self.together(X,S,H,L)
-            X = X - deblocker(X)
+            # X = X - deblocker(X)
             X = torch.cat(torch.split(X, split_size_or_sections=33, dim=1), dim=0)
             X = torch.cat(torch.split(X, split_size_or_sections=33, dim=2), dim=0)
             X = torch.reshape(X, [-1, 33 * 33]).t()
