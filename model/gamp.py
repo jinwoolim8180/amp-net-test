@@ -120,8 +120,7 @@ class AMP_net_Deblock(Module):
     def block1(self, X, y, z, step, onsager):
         # X = torch.squeeze(X)
         # X = torch.transpose(torch.reshape(X, [-1, 32 * 32]),0,1)
-        z *= 0.1 * torch.mean(onsager)
-        z = y - torch.matmul(self.A, X)
+        z = y - torch.matmul(self.A, X + onsager)
         outputs = torch.matmul(self.A.t(), z)
         outputs = step * outputs + X
         # outputs = torch.unsqueeze(torch.reshape(torch.transpose(outputs,0,1),[-1,32,32]),dim=1)
