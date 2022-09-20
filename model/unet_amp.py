@@ -145,8 +145,7 @@ class AMP_net_Deblock(Module):
                 down = residual[-1]
             else:
                 noise, down = denoiser(X, down, residual[output_layers - 1 - n])
-            X = r - torch.matmul(
-                (step * torch.matmul(self.A.t(), self.A)) - torch.eye(33 * 33).float().cuda(), noise)
+            X = r + noise
 
             X = self.together(X,S,H,L)
             # X = X - deblocker(X)
