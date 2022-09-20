@@ -46,12 +46,8 @@ class Denoiser(Module):
         inputs = torch.unsqueeze(torch.reshape(inputs.t(), [-1, 33, 33]), dim=1)
         output = self.W_1(inputs)
         output = self.res_1(output)
-        if r2 is not None:
-            output = output + self.res_1(F.interpolate(r2, size=(33, 33)))
         if self.scale > 1:
             h2 = self.res_2(F.max_pool2d(output, kernel_size=2, stride=2))
-            if r4 is not None:
-                h2 = h2 + self.res_2(F.interpolate(r4, size=(16, 16)))
             output = output + F.interpolate(h2, size=(33, 33))
         if self.scale > 2:
             h4 = self.res_4(F.max_pool2d(output, kernel_size=4, stride=4))
