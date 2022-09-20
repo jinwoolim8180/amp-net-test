@@ -94,6 +94,8 @@ class AMP_net_Deblock(Module):
         for n in range(layer_num):
             if n < 3:
                 self.denoisers.append(Denoiser(scale=2**n))
+            elif n == 4:
+                self.denoisers.append(Denoiser(scale=2))
             else:
                 self.denoisers.append(Denoiser(scale=1))
             self.deblockers.append(Deblocker())
