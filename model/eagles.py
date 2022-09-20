@@ -49,12 +49,12 @@ class Denoiser(Module):
         if r2 is not None:
             output = output + self.res_1(F.interpolate(r2, size=(33, 33)))
         if self.scale > 1:
-            h2 = self.res_2(output)
+            h2 = self.res_2(F.max_pool2d(output, kernel_size=2, stride=2))
             if r4 is not None:
                 h2 = h2 + self.res_2(F.interpolate(r4, size=(16, 16)))
             output = output + F.interpolate(h2, size=(33, 33))
         if self.scale > 2:
-            h4 = self.res_4(output)
+            h4 = self.res_4(F.max_pool2d(output, kernel_size=4, stride=4))
             output = output + F.interpolate(h4, size=(33, 33))
         output = self.W_2(output)
 
@@ -89,7 +89,7 @@ class AMP_net_Deblock(Module):
         self.denoisers = []
         self.deblockers = []
         self.steps = []
-        self.register_parameter("A", nn.Parameter(torch.from_numpy(A).float(),requires_grad=False))
+        self.register_parameter("A", nn.Parameter(torch.from_numpy(A).float(),requires_grad=True))
         self.register_parameter("Q", nn.Parameter(torch.from_numpy(np.transpose(A)).float(), requires_grad=True))
         for n in range(layer_num):
             if n < 3:
