@@ -32,7 +32,7 @@ class ResBlock(Module):
 
 
 class Denoiser(Module):
-    def __init__(self, n_stage=3, scale=1):
+    def __init__(self, n_stage=2, scale=1):
         super().__init__()
         self.scale = scale
         self.W_1 = nn.Conv2d(1, 32 * scale, 3, padding=1, bias=False)
@@ -42,7 +42,7 @@ class Denoiser(Module):
 
     def forward(self, inputs, residual=None):
         if self.scale == 4:
-            residual=None
+            residual = None
         inputs = torch.unsqueeze(torch.reshape(inputs.t(), [-1, 33, 33]), dim=1)
         h = self.W_1(inputs)
         h = F.max_pool2d(h, kernel_size=self.scale, stride=self.scale)
