@@ -20,8 +20,8 @@ def load_sampling_matrix(CS_ratio):
 
 def get_val_result(model,CS_ratio,phaseNum,save_path, is_cuda=True):
     with torch.no_grad():
-        test_set_path = "dataset/bsds500/test"
-        # test_set_path = "dataset/Set11"
+        # test_set_path = "dataset/bsds500/test"
+        test_set_path = "dataset/Set11"
         test_set_path = glob.glob(test_set_path + '/*.tif')
         ImgNum = len(test_set_path)
         PSNR_All = np.zeros([1, ImgNum], dtype=np.float32)
