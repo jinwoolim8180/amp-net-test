@@ -108,7 +108,7 @@ class AMP_net_Deblock(Module):
 
         y = self.sampling(inputs)
         X = torch.matmul(self.Q,y)
-        X = self.initializer(X)
+        X, h = self.initializer(X, None)
         z = None
         h = None
         for n in range(output_layers):
