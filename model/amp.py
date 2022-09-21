@@ -51,7 +51,6 @@ class Denoiser(Module):
                 size = (33, 33)
             elif self.scale == 2:
                 size = (16, 16)
-            print(residual.shape)
             h = h + self.W_r(F.interpolate(residual, size=size))
         output = self.W_2(F.interpolate(h, size=(33, 33)))
 
@@ -119,6 +118,8 @@ class AMP_net_Deblock(Module):
 
             for i in range(20):
                 r, z = self.block1(X, y, z, step)
+            if n == 4:
+                h = None
             noise, h = denoiser(r, h)
             X = r + noise
 
