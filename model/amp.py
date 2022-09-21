@@ -41,6 +41,8 @@ class Denoiser(Module):
         self.W_2 = nn.Conv2d(32 * scale, 1, 3, padding=1, bias=False)
 
     def forward(self, inputs, residual=None):
+        if self.scale == 4:
+            residual=None
         inputs = torch.unsqueeze(torch.reshape(inputs.t(), [-1, 33, 33]), dim=1)
         h = self.W_1(inputs)
         h = F.max_pool2d(h, kernel_size=self.scale, stride=self.scale)
@@ -118,8 +120,6 @@ class AMP_net_Deblock(Module):
 
             for i in range(20):
                 r, z = self.block1(X, y, z, step)
-            if n == 4:
-                h = None
             noise, h = denoiser(r, h)
             X = r + noise
 
