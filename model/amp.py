@@ -107,12 +107,13 @@ class AMP_net_Deblock(Module):
 
         y = self.sampling(inputs)
         X = torch.matmul(self.Q,y)
+        X = self.deblockers[0](X)
         z = None
         h = None
         for n in range(output_layers):
             step = self.steps[n]
             denoiser = self.denoisers[n]
-            deblocker = self.deblockers[n]
+            # deblocker = self.deblockers[n]
 
             for i in range(20):
                 r, z = self.block1(X, y, z, step)
