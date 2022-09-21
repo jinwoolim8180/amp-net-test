@@ -37,7 +37,7 @@ class Denoiser(Module):
         self.scale = scale
         self.W_1 = nn.Conv2d(1, 32 * scale, 3, padding=1, bias=False)
         self.res = nn.Sequential(*[ResBlock(32 * scale) for _ in range(n_stage)])
-        self.W_r = nn.Conv2d(64 * scale, 32 * scale)
+        self.W_r = nn.Conv2d(64 * scale, 32 * scale, kernel_size=3, padding=1, bias=False)
         self.W_2 = nn.Conv2d(32 * scale, 1, 3, padding=1, bias=False)
 
     def forward(self, inputs, residual=None):
