@@ -85,7 +85,7 @@ class AMP_net_Deblock(Module):
         self.denoisers = []
         self.deblockers = []
         self.steps = []
-        self.register_parameter("A", nn.Parameter(torch.from_numpy(A).float(),requires_grad=False))
+        self.register_parameter("A", nn.Parameter(torch.from_numpy(A).float(),requires_grad=True))
         self.register_parameter("Q", nn.Parameter(torch.from_numpy(np.transpose(A)).float(), requires_grad=True))
         self.initializer = Denoiser(scale=1)
         for n in range(layer_num):
