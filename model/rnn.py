@@ -49,6 +49,8 @@ class Denoiser(Module):
         inputs = torch.unsqueeze(torch.reshape(inputs.t(), [-1, 33, 33]), dim=1)
         h = self.W_1(inputs)
         h = self.res_1(h)
+        if residual is None:
+            residual = h
         h = torch.tanh(self.rnn(torch.cat([h, residual], dim=1)))
         output = self.res_2(h)
         output = self.W_2(output)
