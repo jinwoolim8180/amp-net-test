@@ -8,7 +8,7 @@ import torch
 from torch.nn import Module
 from torch import nn
 from torch.autograd import Variable
-from model.unet_amp import AMP_net_Deblock
+from model.amp import AMP_net_Deblock
 
 """
 No mask training, no deblocking
