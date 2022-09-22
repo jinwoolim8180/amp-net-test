@@ -43,7 +43,7 @@ class Denoiser(Module):
         self.W_r = nn.Sequential(
             nn.Conv2d(64 * scale, 32 * scale, kernel_size=3, padding=1, bias=False),
             nn.ReLU(inplace=True),
-            nn.Conv2d(32 * scale, 32 * scale, kernel_size=3, padding=1, bias=Fasle)
+            nn.Conv2d(32 * scale, 32 * scale, kernel_size=3, padding=1, bias=False)
         )
         self.W_2 = nn.Conv2d(32 * scale, 1, 3, padding=1, bias=False)
 
