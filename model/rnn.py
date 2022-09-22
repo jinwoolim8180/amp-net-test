@@ -51,10 +51,12 @@ class Denoiser(Module):
         self.res_2 = ResBlock(32)
         self.W_2 = nn.Conv2d(32, 1, 3, padding=1, bias=False)
 
-    def forward(self, inputs, h=None, c=None):
+    def forward(self, inputs, prev=None, h=None, c=None):
         inputs = torch.unsqueeze(torch.reshape(inputs.t(), [-1, 33, 33]), dim=1)
+        if prev is None:
+            prev = inputs
         x = self.W_1(inputs)
-        x = self.res_1(x)
+        x = self.res_1(torch.cat([x, prev], dim=1))
         if h is None and c is None:
             i = F.sigmoid(self.conv_xi(x))
             o = F.sigmoid(self.conv_xo(x))
@@ -73,7 +75,7 @@ class Denoiser(Module):
 
         # output=inputs-output
         output = torch.reshape(torch.squeeze(output), [-1, 33*33]).t()
-        return output, h, c
+        return output, prev, h, c
 
 class Deblocker(Module):
     def __init__(self):
