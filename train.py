@@ -30,7 +30,7 @@ def train(model, opt, train_loader, epoch, batch_size, CS_ratio,PhaseNum):
         # loss = get_final_loss(loss_all)
         # loss = torch.mean((outputs[-1]-target)**2)
 
-        loss = torch.mean((outputs-data)**2)
+        loss = torch.mean(torch.abs(outputs-data))
         loss.backward()
         opt.step()
         if n % 25 == 0:
