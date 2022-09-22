@@ -8,7 +8,7 @@ import torch
 from torch.nn import Module
 from torch import nn
 from torch.autograd import Variable
-from model.amp import AMP_net_Deblock
+from model.unet_amp import AMP_net_Deblock
 
 """
 No mask training, no deblocking
@@ -30,7 +30,7 @@ def train(model, opt, train_loader, epoch, batch_size, CS_ratio,PhaseNum):
         # loss = get_final_loss(loss_all)
         # loss = torch.mean((outputs[-1]-target)**2)
 
-        loss = torch.mean(torch.abs(outputs-data))
+        loss = torch.mean((outputs-data)**2)
         loss.backward()
         opt.step()
         if n % 25 == 0:

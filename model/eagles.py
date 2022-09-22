@@ -112,6 +112,7 @@ class AMP_net_Deblock(Module):
         z = None
         r2 = None
         r4 = None
+
         for n in range(output_layers):
             step = self.steps[n]
             denoiser = self.denoisers[n]
