@@ -38,28 +38,28 @@ class Denoiser(Module):
         self.W_1 = nn.Conv2d(1, 32, 3, padding=1, bias=False)
         self.res_1 = ResBlock(32)
 
-        self.rnn = nn.Sequential(
-            nn.Conv2d(64, 32, 3, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(32, 32, 3, padding=1)
-        )
-
+        self.differ = ResBlock(32)
         self.res_2 = ResBlock(32)
+
+        self.res_3 = ResBlock(32)
         self.W_2 = nn.Conv2d(32, 1, 3, padding=1, bias=False)
 
-    def forward(self, inputs, residual=None):
+    def forward(self, inputs, prev=None):
         inputs = torch.unsqueeze(torch.reshape(inputs.t(), [-1, 33, 33]), dim=1)
+
         h = self.W_1(inputs)
         h = self.res_1(h)
-        if residual is None:
+        if prev is None:
             residual = h
-        h = torch.tanh(self.rnn(torch.cat([h, residual], dim=1)))
-        output = self.res_2(h)
-        output = self.W_2(output)
+        else:
+            residual = h - prev
+        gate = torch.sigmoid(self.differ(residual))
+        next = torch.tanh(gate * self.res_2(h))
+        output = self.W_2(self.res_3(next))
 
         # output=inputs-output
         output = torch.reshape(torch.squeeze(output), [-1, 33*33]).t()
-        return output, h
+        return output, next
 
 class Deblocker(Module):
     def __init__(self):
