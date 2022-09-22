@@ -36,7 +36,11 @@ class Denoiser(Module):
         super().__init__()
         self.scale = scale
         self.W_1 = nn.Conv2d(1, 32, 3, padding=1, bias=False)
-        self.res_1 = ResBlock(32)
+        self.res_1 = nn.Sequential(
+            nn.Conv2d(64, 32, 3, padding=1, bias=False),
+            nn.ReLU(),
+            nn.Conv2d(32, 32, 3, padding=1, bias=False)
+        )
 
         self.conv_xf = nn.Conv2d(32, 32, 3, padding=1)
         self.conv_xi = nn.Conv2d(32, 32, 3, padding=1)
@@ -53,9 +57,9 @@ class Denoiser(Module):
 
     def forward(self, inputs, prev=None, h=None, c=None):
         inputs = torch.unsqueeze(torch.reshape(inputs.t(), [-1, 33, 33]), dim=1)
-        if prev is None:
-            prev = inputs
         x = self.W_1(inputs)
+        if prev is None:
+            prev = x
         x = self.res_1(torch.cat([x, prev], dim=1))
         if h is None and c is None:
             i = F.sigmoid(self.conv_xi(x))
