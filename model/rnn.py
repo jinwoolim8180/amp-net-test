@@ -36,50 +36,30 @@ class Denoiser(Module):
         super().__init__()
         self.scale = scale
         self.W_1 = nn.Conv2d(1, 32, 3, padding=1, bias=False)
-        self.res_1 = nn.Sequential(
-            nn.Conv2d(64, 32, 3, padding=1, bias=False),
+        self.res_1 = ResBlock(32)
+
+        self.rnn = nn.Sequential(
+            nn.Conv2d(64, 32, 3, padding=1),
             nn.ReLU(),
-            nn.Conv2d(32, 32, 3, padding=1, bias=False)
+            nn.Conv2d(32, 32, 3, padding=1)
         )
-
-        self.conv_xf = nn.Conv2d(32, 32, 3, padding=1)
-        self.conv_xi = nn.Conv2d(32, 32, 3, padding=1)
-        self.conv_xo = nn.Conv2d(32, 32, 3, padding=1)
-        self.conv_xj = nn.Conv2d(32, 32, 3, padding=1)
-
-        self.conv_hf = nn.Conv2d(32, 32, 3, padding=1)
-        self.conv_hi = nn.Conv2d(32, 32, 3, padding=1)
-        self.conv_ho = nn.Conv2d(32, 32, 3, padding=1)
-        self.conv_hj = nn.Conv2d(32, 32, 3, padding=1)
 
         self.res_2 = ResBlock(32)
         self.W_2 = nn.Conv2d(32, 1, 3, padding=1, bias=False)
 
-    def forward(self, inputs, prev=None, h=None, c=None):
+    def forward(self, inputs, residual=None):
         inputs = torch.unsqueeze(torch.reshape(inputs.t(), [-1, 33, 33]), dim=1)
-        x = self.W_1(inputs)
-        if prev is None:
-            prev = x
-        x = self.res_1(torch.cat([x, prev], dim=1))
-        if h is None and c is None:
-            i = F.sigmoid(self.conv_xi(x))
-            o = F.sigmoid(self.conv_xo(x))
-            j = F.tanh(self.conv_xj(x))
-            c = i * j
-            h = o * c
-        else:
-            f = F.sigmoid(self.conv_xf(x) + self.conv_hf(h))
-            i = F.sigmoid(self.conv_xi(x) + self.conv_hi(h))
-            o = F.sigmoid(self.conv_xo(x) + self.conv_ho(h))
-            j = F.tanh(self.conv_xj(x) + self.conv_hj(h))
-            c = f * c + i * j
-            h = o * F.tanh(c)
+        h = self.W_1(inputs)
+        h = self.res_1(h)
+        if residual is None:
+            residual = h
+        h = torch.tanh(self.rnn(torch.cat([h, residual], dim=1)))
         output = self.res_2(h)
         output = self.W_2(output)
 
         # output=inputs-output
         output = torch.reshape(torch.squeeze(output), [-1, 33*33]).t()
-        return output, prev, h, c
+        return output, h
 
 class Deblocker(Module):
     def __init__(self):
@@ -132,8 +112,6 @@ class AMP_net_Deblock(Module):
         X = torch.matmul(self.Q,y)
         z = None
         h = None
-        c = None
-        prev = None
         for n in range(output_layers):
             step = self.steps[n]
             denoiser = self.denoisers[n]
@@ -141,7 +119,7 @@ class AMP_net_Deblock(Module):
 
             for i in range(20):
                 r, z = self.block1(X, y, z, step)
-            noise, prev, h, c = denoiser(r, prev, h, c)
+            noise, h = denoiser(r, h)
             X = r + noise
 
             X = self.together(X,S,H,L)
