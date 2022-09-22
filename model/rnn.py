@@ -51,6 +51,8 @@ class Denoiser(Module):
         h = self.res_1(h)
         if residual is None:
             residual = h
+        print(residual.shape)
+        print(h.shape)
         h = torch.tanh(self.rnn(torch.cat([h, residual], dim=1)))
         output = self.res_2(h)
         output = self.W_2(output)
