@@ -40,7 +40,7 @@ class Denoiser(Module):
         self.differ = nn.Sequential(
             nn.Conv2d(64, 32, 3, padding=1, bias=False),
             nn.ReLU(inplace=True),
-            nn.MaxPool(kernel_size=3, stride=3),
+            nn.MaxPool2d(kernel_size=3, stride=3),
             ResBlock(32),
             nn.Upsample(scale_factor=3),
             nn.ReLU(inplace=True),
