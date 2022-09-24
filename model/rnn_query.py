@@ -36,34 +36,27 @@ class Denoiser(Module):
         super().__init__()
         self.scale = scale
         self.W_1 = nn.Conv2d(1, 32, 3, padding=1, bias=False)
+        self.res_1 = ResBlock(32)
 
-        self.differ = nn.Sequential(
-            nn.Conv2d(64, 32, 3, padding=1, bias=False),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=3),
-            ResBlock(32),
-            nn.Upsample(scale_factor=3),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(32, 32, 3, padding=1, bias=False)
-        )
-        self.res = nn.Sequential(
-            ResBlock(32),
-            ResBlock(32)
-        )
+        self.query = ResBlock(32)
+        self.key = ResBlock(32)
+        self.value = ResBlock(32)
 
+        self.res_3 = ResBlock(32)
         self.W_2 = nn.Conv2d(32, 1, 3, padding=1, bias=False)
 
     def forward(self, inputs, prev=None):
         inputs = torch.unsqueeze(torch.reshape(inputs.t(), [-1, 33, 33]), dim=1)
 
         h = self.W_1(inputs)
+        h = self.res_1(h)
         if prev is None:
-            residual = h
+            residual = h - h
         else:
             residual = h - prev
-        gate = torch.sigmoid(self.differ(torch.cat([h, residual], dim=1)))
-        next = gate * self.res(h)
-        output = self.W_2(next)
+        gate = torch.sigmoid(self.query(h) * self.key(residual))
+        next = gate * self.value(h)
+        output = self.W_2(self.res_3(next))
 
         # output=inputs-output
         output = torch.reshape(torch.squeeze(output), [-1, 33*33]).t()
