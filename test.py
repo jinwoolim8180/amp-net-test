@@ -68,7 +68,7 @@ def get_val_result(model,CS_ratio,phaseNum,save_path, is_cuda=True):
 if __name__ == "__main__":
     model_name = "AMP_Net_K"
     CS_ratios = [10]
-    Phases = [6]
+    Phases = [12]
     phase = 6
 	
     save_path = "./results/generated_images"
