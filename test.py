@@ -69,7 +69,7 @@ if __name__ == "__main__":
     model_name = "AMP_Net_K"
     CS_ratios = [10]
     Phases = [12]
-    phase = 6
+    phase = 12
 	
     save_path = "./results/generated_images"
 
