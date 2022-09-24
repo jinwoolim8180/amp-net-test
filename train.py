@@ -138,6 +138,12 @@ if __name__ == "__main__":
         for PhaseNumber in PhaseNumbers:
             A = load_sampling_matrix(CS_ratio)
             model = AMP_net_Deblock(PhaseNumber,A)
+
+            if True:
+                model_name = "AMP_Net_K"
+                path = os.path.join("results", model_name, str(CS_ratio), str(PhaseNumber), "best_model.pkl")
+                model.load_state_dict(torch.load(path))
+
             opt = torch.optim.Adam(model.parameters(), lr=learning_rate)
             model.cuda()
             sub_path = os.path.join(results_saving_path, str(CS_ratio))
