@@ -23,7 +23,8 @@ def train(model, opt, train_loader, epoch, batch_size, CS_ratio,PhaseNum):
         n = n + 1
         opt.zero_grad()
         data = torch.unsqueeze(data,dim=1)
-        data = Variable(data.float().cuda())
+        # data = Variable(data.float().cuda())
+        data = Variable(data.float())
         outputs= model(data,PhaseNum)
 
         # loss_all = compute_loss(outputs,data)
@@ -39,7 +40,7 @@ def train(model, opt, train_loader, epoch, batch_size, CS_ratio,PhaseNum):
             print(output)
 
 
-def get_val_result(model,PhaseNum, is_cuda=True):
+def get_val_result(model,PhaseNum, is_cuda=False):
     model.eval()
     with torch.no_grad():
         test_set_path = "dataset/bsds500/val"
@@ -106,7 +107,7 @@ def get_Q(data_set,A):
 
 
 if __name__ == "__main__":
-    is_cuda = True
+    is_cuda = False
     CS_ratio = 25  # 4, 10, 25, 30, 40, 50
     CS_ratios = [10]
     # n_output = 1089
@@ -145,7 +146,7 @@ if __name__ == "__main__":
                 model.load_state_dict(torch.load(path))
 
             opt = torch.optim.Adam(model.parameters(), lr=learning_rate)
-            model.cuda()
+            # model.cuda()
             sub_path = os.path.join(results_saving_path, str(CS_ratio))
 
             if not os.path.exists(sub_path):
