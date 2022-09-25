@@ -51,9 +51,9 @@ class Denoiser(Module):
         h = self.W_1(inputs)
         h = self.res_1(h)
         if prev is None:
-            residual = h
+            residual = h - h
         else:
-            residual = prev
+            residual = h - prev
         gate = torch.sigmoid(self.query(h) * self.key(residual))
         next = gate * self.value(h)
         output = self.W_2(self.res_3(next))
@@ -115,7 +115,7 @@ class AMP_net_Deblock(Module):
         h = None
         for n in range(output_layers):
             step = self.steps[n]
-            denoiser = self.denoisers[n]
+            denoiser = self.denoisers[0]
             # deblocker = self.deblockers[n]
 
             for i in range(20):
