@@ -114,7 +114,7 @@ if __name__ == "__main__":
     PhaseNumbers = [6]
     # PhaseNumber = 9
     # nrtrain = 88912
-    learning_rate = 5e-5
+    learning_rate = 1e-5
     EpochNum = 30
     batch_size = 32
     results_saving_path = "results"
