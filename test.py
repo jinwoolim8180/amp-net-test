@@ -18,7 +18,7 @@ def load_sampling_matrix(CS_ratio):
     return data
 
 
-def get_val_result(model,CS_ratio,phaseNum,save_path, is_cuda=True):
+def get_val_result(model,CS_ratio,phaseNum,save_path, is_cuda=False):
     with torch.no_grad():
         # test_set_path = "dataset/bsds500/test"
         test_set_path = "dataset/Set11"
@@ -68,8 +68,8 @@ def get_val_result(model,CS_ratio,phaseNum,save_path, is_cuda=True):
 if __name__ == "__main__":
     model_name = "AMP_Net_K"
     CS_ratios = [10]
-    Phases = [12]
-    phase = 12
+    Phases = [6]
+    phase = 6
 	
     save_path = "./results/generated_images"
 
@@ -89,7 +89,7 @@ if __name__ == "__main__":
 
             A = load_sampling_matrix(CS_ratio)
             model = AMP_net_Deblock(phase,A)
-            model.cuda()
+            # model.cuda()
             model.load_state_dict(torch.load(path))
             print("Start")
             one_psnr, one_ssim = get_val_result(model,CS_ratio,phase,sub_save_path, is_cuda=True)  # test AMP_net

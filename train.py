@@ -115,7 +115,7 @@ if __name__ == "__main__":
     # PhaseNumber = 9
     # nrtrain = 88912
     learning_rate = 0.0001
-    EpochNum = 12
+    EpochNum = 30
     batch_size = 32
     results_saving_path = "results"
 
@@ -140,7 +140,7 @@ if __name__ == "__main__":
             A = load_sampling_matrix(CS_ratio)
             model = AMP_net_Deblock(PhaseNumber,A)
 
-            if False:
+            if True:
                 model_name = "AMP_Net_K"
                 path = os.path.join("results", model_name, str(CS_ratio), str(PhaseNumber), "best_model.pkl")
                 model.load_state_dict(torch.load(path))
