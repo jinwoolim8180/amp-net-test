@@ -92,6 +92,6 @@ if __name__ == "__main__":
             # model.cuda()
             model.load_state_dict(torch.load(path))
             print("Start")
-            one_psnr, one_ssim = get_val_result(model,CS_ratio,phase,sub_save_path, is_cuda=True)  # test AMP_net
+            one_psnr, one_ssim = get_val_result(model,CS_ratio,phase,sub_save_path, is_cuda=False)  # test AMP_net
 
             print(one_psnr,"dB",one_ssim)
