@@ -8,7 +8,7 @@ import torch
 from torch.nn import Module
 from torch import nn
 from torch.autograd import Variable
-from model.rnn_query import AMP_net_Deblock
+from model.rnn import AMP_net_Deblock
 
 """
 No mask training, no deblocking
@@ -140,7 +140,7 @@ if __name__ == "__main__":
             A = load_sampling_matrix(CS_ratio)
             model = AMP_net_Deblock(PhaseNumber,A)
 
-            if True:
+            if False:
                 model_name = "AMP_Net_K"
                 path = os.path.join("results", model_name, str(CS_ratio), str(PhaseNumber), "best_model.pkl")
                 model.load_state_dict(torch.load(path))
