@@ -69,7 +69,7 @@ if __name__ == "__main__":
     model_name = "AMP_Net_K"
     CS_ratios = [10]
     Phases = [12]
-    phase = 6
+    phase = 12
 	
     save_path = "./results/generated_images"
 
@@ -89,9 +89,9 @@ if __name__ == "__main__":
 
             A = load_sampling_matrix(CS_ratio)
             model = AMP_net_Deblock(phase,A)
-            # model.cuda()
+            model.cuda()
             model.load_state_dict(torch.load(path))
             print("Start")
-            one_psnr, one_ssim = get_val_result(model,CS_ratio,phase,sub_save_path, is_cuda=False)  # test AMP_net
+            one_psnr, one_ssim = get_val_result(model,CS_ratio,phase,sub_save_path, is_cuda=True)  # test AMP_net
 
             print(one_psnr,"dB",one_ssim)

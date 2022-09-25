@@ -51,16 +51,16 @@ class Denoiser(Module):
         h = self.W_1(inputs)
         h = self.res_1(h)
         if prev is None:
-            residual = h - h
+            residual = h
         else:
-            residual = h - prev
+            residual = prev
         gate = torch.sigmoid(self.query(h) * self.key(residual))
         next = gate * self.value(h)
         output = self.W_2(self.res_3(next))
 
         # output=inputs-output
         output = torch.reshape(torch.squeeze(output), [-1, 33*33]).t()
-        return output, next
+        return output, next, torch.reshape(torch.squeeze(gate), [-1, 33*33]).t()
 
 class Deblocker(Module):
     def __init__(self):
@@ -113,14 +113,14 @@ class AMP_net_Deblock(Module):
         X = torch.matmul(self.Q,y)
         z = None
         h = None
+        step = self.steps[0]
         for n in range(output_layers):
-            step = self.steps[n]
             denoiser = self.denoisers[n]
             # deblocker = self.deblockers[n]
 
             for i in range(20):
                 r, z = self.block1(X, y, z, step)
-            noise, h = denoiser(r, h)
+            noise, h, step = denoiser(r, h)
             X = r + noise
 
             X = self.together(X,S,H,L)
