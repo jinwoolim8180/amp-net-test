@@ -60,7 +60,7 @@ class Denoiser(Module):
 
         # output=inputs-output
         output = torch.reshape(torch.squeeze(output), [-1, 33*33]).t()
-        return output, next, torch.reshape(torch.squeeze(gate), [-1, 33*33]).t()
+        return output, next
 
 class Deblocker(Module):
     def __init__(self):
@@ -113,16 +113,15 @@ class AMP_net_Deblock(Module):
         X = torch.matmul(self.Q,y)
         z = None
         h = None
-        step = self.steps[0]
         for n in range(output_layers):
+            step = self.steps[n]
             denoiser = self.denoisers[n]
             # deblocker = self.deblockers[n]
 
             for i in range(20):
                 r, z = self.block1(X, y, z, step)
-            noise, h, attention = denoiser(r, h)
+            noise, h = denoiser(r, h)
             X = r + noise
-            step = attention + torch.ones_like(attention).to(attention.device)
 
             X = self.together(X,S,H,L)
             # X = X - deblocker(X)
@@ -150,8 +149,6 @@ class AMP_net_Deblock(Module):
         # z *= 0.1
         z = y - torch.matmul(self.A, X)
         outputs = torch.matmul(self.A.t(), z)
-        print(outputs.shape)
-        print(step.shape)
         outputs = step * outputs + X
         # outputs = torch.unsqueeze(torch.reshape(torch.transpose(outputs,0,1),[-1,32,32]),dim=1)
         return outputs, z
