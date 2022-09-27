@@ -45,6 +45,13 @@ class Denoiser(Module):
         self.res_3 = ResBlock(32)
         self.W_2 = nn.Conv2d(32, 1, 3, padding=1, bias=False)
 
+    def _attention(self, x, r):
+        N, C, H, W = x.shape
+        x = x.reshape(N, C, H * W)
+        r = r.reshape(N, C, H * W).permute(0, 2, 1)
+        gate = F.softmax(self.query(r) @ self.key(x), dim=-1)
+        return self.value(x) @ gate
+
     def forward(self, inputs, prev=None):
         inputs = torch.unsqueeze(torch.reshape(inputs.t(), [-1, 33, 33]), dim=1)
 
@@ -54,8 +61,7 @@ class Denoiser(Module):
             residual = h - h
         else:
             residual = h - prev
-        gate = torch.sigmoid(self.query(residual) * self.key(h))
-        next = gate * self.value(h)
+        next = self._attention(h, residual)
         output = self.W_2(self.res_3(next))
 
         # output=inputs-output
