@@ -51,11 +51,11 @@ class Denoiser(Module):
         k = self.key(x)
         v = self.value(x)
 
-        q = q.reshape(N, C, H * W)
+        q = q.reshape(N, C, H * W).permute(0, 2, 1)
         v = v.reshape(N, C, H * W)
-        k = k.reshape(N, C, H * W).permute(0, 2, 1)
+        k = k.reshape(N, C, H * W)
         gate = F.softmax(q @ k, dim=-1)
-        return torch.reshape(gate @ v, (N, C, H, W))
+        return torch.reshape(v @ gate, (N, C, H, W))
 
     def forward(self, inputs, prev=None):
         inputs = torch.unsqueeze(torch.reshape(inputs.t(), [-1, 33, 33]), dim=1)
