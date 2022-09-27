@@ -65,16 +65,16 @@ class Denoiser(Module):
 class Deblocker(Module):
     def __init__(self):
         super().__init__()
-        self.D = nn.Sequential(nn.Conv2d(1, 64, 3, padding=1),
+        self.D = nn.Sequential(nn.Conv2d(1, 32, 3, padding=1),
 
                                nn.ReLU(),
-                               nn.Conv2d(64, 64, 3, padding=1),
+                               nn.Conv2d(32, 32, 3, padding=1),
 
                                nn.ReLU(),
-                               nn.Conv2d(64, 64, 3, padding=1),
+                               nn.Conv2d(32, 32, 3, padding=1),
 
                                nn.ReLU(),
-                               nn.Conv2d(64, 1, 3, padding=1,bias=False))
+                               nn.Conv2d(32, 1, 3, padding=1,bias=False))
 
     def forward(self, inputs):
         inputs = torch.unsqueeze(inputs,dim=1)
