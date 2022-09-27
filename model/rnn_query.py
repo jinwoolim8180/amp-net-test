@@ -41,7 +41,6 @@ class Denoiser(Module):
         self.query = ResBlock(32)
         self.key = ResBlock(32)
         self.value = ResBlock(32)
-        self.act = nn.Softmax2d()
 
         self.res_3 = ResBlock(32)
         self.W_2 = nn.Conv2d(32, 1, 3, padding=1, bias=False)
@@ -55,7 +54,7 @@ class Denoiser(Module):
             residual = h - h
         else:
             residual = h - prev
-        gate = self.act(self.query(residual) * self.key(h))
+        gate = torch.sigmoid(self.query(residual) * self.key(h))
         next = gate * self.value(h)
         output = self.W_2(self.res_3(next))
 
