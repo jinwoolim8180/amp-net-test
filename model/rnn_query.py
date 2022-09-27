@@ -47,10 +47,15 @@ class Denoiser(Module):
 
     def _attention(self, x, r):
         N, C, H, W = x.shape
-        x = x.reshape(N, C, H * W)
-        r = r.reshape(N, C, H * W).permute(0, 2, 1)
-        gate = F.softmax(self.query(r) @ self.key(x), dim=-1)
-        return torch.reshape(self.value(x) @ gate, (N, C, H, W))
+        q = self.query(r)
+        k = self.key(x)
+        v = self.value(x)
+
+        q = q.reshape(N, C, H * W)
+        v = v.reshape(N, C, H * W)
+        k = k.reshape(N, C, H * W).permute(0, 2, 1)
+        gate = F.softmax(q @ k, dim=-1)
+        return torch.reshape(v @ gate, (N, C, H, W))
 
     def forward(self, inputs, prev=None):
         inputs = torch.unsqueeze(torch.reshape(inputs.t(), [-1, 33, 33]), dim=1)
