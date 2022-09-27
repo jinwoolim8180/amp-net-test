@@ -19,7 +19,7 @@ class ResBlock(Module):
     def __init__(self, n_channels):
         super().__init__()
         self.block = nn.Sequential(
-            nn.Conv2d(n_channels, n_channels, 3, padding=2, dilation=2, bias=False),
+            nn.Conv2d(n_channels, n_channels, 3, padding=1, bias=False),
             nn.ReLU(inplace=True),
             nn.Conv2d(n_channels, n_channels, 3, padding=1, bias=False)
         )
