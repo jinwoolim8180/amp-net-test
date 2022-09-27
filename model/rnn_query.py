@@ -16,12 +16,12 @@ AMP-Net-K
 
 
 class ResBlock(Module):
-    def __init__(self, n_channels):
+    def __init__(self, n_channels, dilation=1):
         super().__init__()
         self.block = nn.Sequential(
-            nn.Conv2d(n_channels, n_channels, 3, padding=1, bias=False),
+            nn.Conv2d(n_channels, n_channels, 3, padding=dilation, dilation=dilation, bias=False),
             nn.ReLU(inplace=True),
-            nn.Conv2d(n_channels, n_channels, 3, padding=1, bias=False)
+            nn.Conv2d(n_channels, n_channels, 3, padding=dilation, dilation=dilation, bias=False)
         )
         self.relu = nn.ReLU(inplace=True)
 
@@ -38,11 +38,7 @@ class Denoiser(Module):
         self.W_1 = nn.Conv2d(1, 32, 3, padding=1, bias=False)
         self.res_1 = ResBlock(32)
 
-        self.query = nn.Sequential(
-            nn.Conv2d(64, 32, 3, padding=1, bias=False),
-            nn.ReLU(),
-            nn.Conv2d(32, 32, 3, padding=1, bias=False)
-        )
+        self.query = ResBlock(32)
         self.key = ResBlock(32)
         self.value = ResBlock(32)
         self.act = nn.Softmax2d()
@@ -59,8 +55,7 @@ class Denoiser(Module):
             residual = h - h
         else:
             residual = h - prev
-        query = self.query(torch.cat([h, residual], dim=1))
-        gate = self.act(query * self.key(h))
+        gate = self.act(self.query(residual) * self.key(h))
         next = gate * self.value(h)
         output = self.W_2(self.res_3(next))
 
@@ -98,10 +93,10 @@ class AMP_net_Deblock(Module):
         self.register_parameter("A", nn.Parameter(torch.from_numpy(A).float(),requires_grad=True))
         self.register_parameter("Q", nn.Parameter(torch.from_numpy(np.transpose(A)).float(), requires_grad=True))
         for n in range(layer_num):
-            if n < layer_num - layer_num % 3:
-                self.denoisers.append(Denoiser(scale=2**(2 - n % 3)))
+            if n < 3:
+                self.denoisers.append(Denoiser(scale=2))
             else:
-                self.denoisers.append(Denoiser(scale=2**(layer_num % 3 - n % 3 - 1)))
+                self.denoisers.append(Denoiser())
             self.deblockers.append(Deblocker())
             self.register_parameter("step_" + str(n + 1), nn.Parameter(torch.tensor(1.0),requires_grad=False))
             self.steps.append(eval("self.step_" + str(n + 1)))
