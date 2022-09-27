@@ -9,7 +9,7 @@ from torch.nn import Module
 from torch import nn
 from torch.autograd import Variable
 from skimage.io import imsave
-from model.rnn_query import AMP_net_Deblock
+from model.rnn import AMP_net_Deblock
 
 
 def load_sampling_matrix(CS_ratio):
