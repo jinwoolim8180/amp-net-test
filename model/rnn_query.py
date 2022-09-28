@@ -42,7 +42,7 @@ class Denoiser(Module):
         self.key = ResBlock(32, 32)
         self.value = ResBlock(64, 32)
 
-        self.res_3 = ResBlock(32)
+        self.res_3 = ResBlock(32, 32)
         self.W_2 = nn.Conv2d(32, 1, 3, padding=1, bias=False)
 
     def forward(self, inputs, prev=None):
