@@ -54,8 +54,9 @@ class Denoiser(Module):
             residual = h - h
         else:
             residual = h - prev
-        gate = torch.sigmoid(self.query(residual) + self.key(h))
-        next = gate * self.value(h)
+        gate = torch.sigmoid(self.query(residual) * self.key(h))
+        next = self.value(h)
+        next = gate * next + next
         output = self.W_2(self.res_3(next))
 
         # output=inputs-output
