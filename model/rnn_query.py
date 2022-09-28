@@ -38,11 +38,7 @@ class Denoiser(Module):
         self.W_1 = nn.Conv2d(1, 32, 3, padding=1, bias=False)
         self.res_1 = ResBlock(32, 32)
 
-        self.query = nn.Sequential(
-            nn.Conv2d(64, 32, 3, padding=1, bias=False),
-            nn.ReLU(),
-            nn.Conv2d(32, 32, 3, padding=1, bias=False)
-        )
+        self.query = ResBlock(32, 32)
         self.key = ResBlock(32, 32)
         self.value = nn.Sequential(
             nn.Conv2d(64, 32, 3, padding=1, bias=False),
@@ -59,13 +55,11 @@ class Denoiser(Module):
         h = self.W_1(inputs)
         h = self.res_1(h)
         if prev is None:
-            residual = h - h
-        else:
-            residual = h - prev
-        query = self.query(torch.cat([h, residual], dim=1))
+            prev = h
+        query = self.query(prev)
         key = self.key(h)
         gate = torch.sigmoid(query * key)
-        next = self.value(torch.cat([h, residual], dim=1))
+        next = self.value(torch.cat([h, prev], dim=1))
         next = gate * next + next
         output = self.W_2(self.res_3(next))
 
