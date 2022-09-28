@@ -16,10 +16,10 @@ AMP-Net-K
 
 
 class ResBlock(Module):
-    def __init__(self, n_channels):
+    def __init__(self, in_channels, n_channels):
         super().__init__()
         self.block = nn.Sequential(
-            nn.Conv2d(n_channels, n_channels, 3, padding=1, bias=False),
+            nn.Conv2d(in_channels, n_channels, 3, padding=1, bias=False),
             nn.ReLU(inplace=True),
             nn.Conv2d(n_channels, n_channels, 3, padding=1, bias=False)
         )
@@ -36,11 +36,11 @@ class Denoiser(Module):
         super().__init__()
         self.scale = scale
         self.W_1 = nn.Conv2d(1, 32, 3, padding=1, bias=False)
-        self.res_1 = ResBlock(32)
+        self.res_1 = ResBlock(32, 32)
 
-        self.query = ResBlock(32)
-        self.key = ResBlock(32)
-        self.value = ResBlock(32)
+        self.query = ResBlock(64, 32)
+        self.key = ResBlock(32, 32)
+        self.value = ResBlock(64, 32)
 
         self.res_3 = ResBlock(32)
         self.W_2 = nn.Conv2d(32, 1, 3, padding=1, bias=False)
@@ -54,8 +54,10 @@ class Denoiser(Module):
             residual = h - h
         else:
             residual = h - prev
-        gate = torch.sigmoid(self.query(residual) * self.key(h))
-        next = self.value(h)
+        query = self.query(torch.cat([h, residual], dim=1))
+        key = self.key(h)
+        gate = torch.sigmoid(query * key)
+        next = self.value(torch.cat([h, residual], dim=1))
         next = gate * next + next
         output = self.W_2(self.res_3(next))
 
