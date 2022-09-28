@@ -129,7 +129,7 @@ class AMP_net_Deblock(Module):
 
             for i in range(20):
                 r, z = self.block1(X, y, z, step)
-            noise, h = denoiser(r, h)
+            noise, h = denoiser(r, h, initial)
             X = r + noise
 
             X = self.together(X,S,H,L)
