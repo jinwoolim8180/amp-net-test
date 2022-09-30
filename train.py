@@ -111,11 +111,11 @@ if __name__ == "__main__":
     CS_ratio = 25  # 4, 10, 25, 30, 40, 50
     CS_ratios = [10]
     # n_output = 1089
-    PhaseNumbers = [6]
+    PhaseNumbers = [12]
     # PhaseNumber = 9
     # nrtrain = 88912
     learning_rate = 1e-4
-    EpochNum = 30
+    EpochNum = 400
     batch_size = 32
     results_saving_path = "results"
 

@@ -52,7 +52,7 @@ class Denoiser(Module):
         h = self.res_1(h)
         if prev is None:
             prev = h
-        query = self.query(prev)
+        query = self.query(h - prev)
         key = self.key(h)
         gate = torch.sigmoid(query * key)
         next = self.value(torch.cat([h, prev], dim=1))
