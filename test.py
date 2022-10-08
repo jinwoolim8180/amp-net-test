@@ -9,7 +9,7 @@ from torch.nn import Module
 from torch import nn
 from torch.autograd import Variable
 from skimage.io import imsave
-from model.rnn import AMP_net_Deblock
+from model.amp import AMP_net_Deblock
 
 
 def load_sampling_matrix(CS_ratio):
@@ -69,7 +69,7 @@ if __name__ == "__main__":
     model_name = "AMP_Net_K"
     CS_ratios = [10]
     Phases = [6]
-    phase = 4
+    phase = 6
 	
     save_path = "./results/generated_images"
 
