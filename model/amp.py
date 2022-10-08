@@ -35,30 +35,24 @@ class Denoiser(Module):
     def __init__(self, n_stage=2, scale=1):
         super().__init__()
         self.scale = scale
-        self.W_1 = nn.Conv2d(1, 32 * scale, 3, padding=1, bias=False)
-        self.res = nn.Sequential(*[ResBlock(32 * scale) for _ in range(n_stage)])
-        self.W_r = nn.Conv2d(64 * scale, 32 * scale, kernel_size=3, padding=1, bias=False)
-        self.W_2 = nn.Conv2d(32 * scale, 1, 3, padding=1, bias=False)
+        self.D = nn.Sequential(nn.Conv2d(1, 32, 3, padding=1),
+
+                               nn.ReLU(),
+                               nn.Conv2d(32, 32, 3, padding=1),
+
+                               nn.ReLU(),
+                               nn.Conv2d(32, 32, 3, padding=1),
+
+                               nn.ReLU(),
+                               nn.Conv2d(32, 1, 3, padding=1, bias=False))
 
     def forward(self, inputs, residual=None):
-        if self.scale == 4:
-            residual = None
         inputs = torch.unsqueeze(torch.reshape(inputs.t(), [-1, 33, 33]), dim=1)
-        h = self.W_1(inputs)
-        h = F.max_pool2d(h, kernel_size=self.scale, stride=self.scale)
-        h = self.res(h)
-        if residual is not None:
-            size = (8, 8)
-            if self.scale == 1:
-                size = (33, 33)
-            elif self.scale == 2:
-                size = (16, 16)
-            h = h + self.W_r(F.interpolate(residual, size=size))
-        output = self.W_2(F.interpolate(h, size=(33, 33)))
+        output = self.D(inputs)
 
         # output=inputs-output
         output = torch.reshape(torch.squeeze(output), [-1, 33*33]).t()
-        return output, h
+        return output, None
 
 class Deblocker(Module):
     def __init__(self):
@@ -114,7 +108,7 @@ class AMP_net_Deblock(Module):
         for n in range(output_layers):
             step = self.steps[n]
             denoiser = self.denoisers[n]
-            # deblocker = self.deblockers[n]
+            deblocker = self.deblockers[n]
 
             for i in range(20):
                 r, z = self.block1(X, y, z, step)
@@ -122,7 +116,7 @@ class AMP_net_Deblock(Module):
             X = r + noise
 
             X = self.together(X,S,H,L)
-            # X = X - deblocker(X)
+            X = X - deblocker(X)
             X = torch.cat(torch.split(X, split_size_or_sections=33, dim=1), dim=0)
             X = torch.cat(torch.split(X, split_size_or_sections=33, dim=2), dim=0)
             X = torch.reshape(X, [-1, 33 * 33]).t()
