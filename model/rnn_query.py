@@ -68,6 +68,16 @@ class Denoiser(Module):
 class Deblocker(Module):
     def __init__(self):
         super().__init__()
+        self.scale = scale
+        self.W_1 = nn.Conv2d(33, 32, 3, padding=1, bias=False)
+        self.res_1 = ResBlock(32, 32)
+
+        self.query = nn.Conv2d(32, 32, 3, padding=1, bias=False)
+        self.key = nn.Conv2d(32, 32, 3, padding=1, bias=False)
+        self.value = nn.Conv2d(32, 32, 3, padding=1, bias=False)
+
+        self.res_3 = ResBlock(32, 32)
+        self.W_2 = nn.Conv2d(32, 1, 3, padding=1, bias=False)
         self.D = nn.Sequential(nn.Conv2d(1, 32, 3, padding=1),
 
                                nn.ReLU(),
