@@ -79,11 +79,23 @@ class Deblocker(Module):
                                nn.ReLU(),
                                nn.Conv2d(32, 1, 3, padding=1,bias=False))
 
-    def forward(self, inputs):
+    def forward(self, inputs, c, prev=None):
         inputs = torch.unsqueeze(inputs,dim=1)
-        output = self.D(inputs)
+        if c is None:
+            c = torch.zeros(inputs.shape[0], 32, 33, 33).to(inputs.device)
+        h = self.W_1(torch.cat([inputs, c], dim=1))
+        h = self.res_1(h)
+        if prev is None:
+            prev = h
+        query = self.query(prev)
+        key = self.key(h)
+        gate = torch.sigmoid(query * key)
+        next = self.value(h)
+        next = gate * next + next
+        c = self.res_3(next)
+        output = self.W_2(c)
         output = torch.squeeze(output,dim=1)
-        return output
+        return output, c, next
 
 class AMP_net_Deblock(Module):
     def __init__(self,layer_num, A):
@@ -124,11 +136,10 @@ class AMP_net_Deblock(Module):
 
             for i in range(20):
                 r, z = self.block1(X, y, z, step)
-            noise, c, h = denoiser(r, c, h)
-            X = r + noise
 
             X = self.together(X,S,H,L)
-            # X = X - deblocker(X)
+            noise, c, h = denoiser(X, c, h)
+            X = X + noise
             X = torch.cat(torch.split(X, split_size_or_sections=33, dim=1), dim=0)
             X = torch.cat(torch.split(X, split_size_or_sections=33, dim=2), dim=0)
             X = torch.reshape(X, [-1, 33 * 33]).t()
