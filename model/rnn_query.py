@@ -57,7 +57,7 @@ class Denoiser(Module):
         key = self.key(h)
         gate = torch.sigmoid(query * key)
         next = self.value(h)
-        next = gate * prev + (1 - gate) * next
+        next = gate * next + next
         c = self.res_3(next)
         output = self.W_2(c)
 
