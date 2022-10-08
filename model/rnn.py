@@ -35,7 +35,7 @@ class Denoiser(Module):
     def __init__(self, n_stage=2, scale=1):
         super().__init__()
         self.scale = scale
-        self.W_1 = nn.Conv2d(2, 32, 3, padding=1, bias=False)
+        self.W_1 = nn.Conv2d(33, 32, 3, padding=1, bias=False)
         self.res_1 = ResBlock(32)
 
         self.differ = nn.Sequential(
@@ -65,11 +65,12 @@ class Denoiser(Module):
         gate = torch.sigmoid(self.differ(torch.cat([h, residual], dim=1)))
         next = self.res_2(torch.cat([h, residual], dim=1))
         next = next + gate * next
-        output = self.W_2(self.res_3(next))
+        initial = self.res_3(next)
+        output = self.W_2(initial)
 
         # output=inputs-output
         output = torch.reshape(torch.squeeze(output), [-1, 33*33]).t()
-        return output, next
+        return output, initial, next
 
 class Deblocker(Module):
     def __init__(self):
@@ -120,7 +121,7 @@ class AMP_net_Deblock(Module):
 
         y = self.sampling(inputs)
         X = torch.matmul(self.Q,y)
-        initial = X
+        initial = torch.zeros(1, 32, 33, 33).to(X.device)
         z = None
         h = None
         for n in range(output_layers):
@@ -130,7 +131,7 @@ class AMP_net_Deblock(Module):
 
             for i in range(20):
                 r, z = self.block1(X, y, z, step)
-            noise, h = denoiser(r, h, initial)
+            noise, initial, h = denoiser(r, h, initial)
             X = r + noise
 
             X = self.together(X,S,H,L)
