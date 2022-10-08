@@ -114,7 +114,7 @@ class AMP_net_Deblock(Module):
         y = self.sampling(inputs)
         X = torch.matmul(self.Q,y)
         z = None
-        c = torch.zeros(S, 32, 33, 33).to(X.device)
+        c = torch.zeros(inputs.shape[1], 32, 33, 33).to(X.device)
         h = None
         for n in range(output_layers):
             step = self.steps[n]
