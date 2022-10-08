@@ -35,33 +35,34 @@ class Denoiser(Module):
     def __init__(self, n_stage=2, scale=1):
         super().__init__()
         self.scale = scale
-        self.W_1 = nn.Conv2d(1, 32, 3, padding=1, bias=False)
+        self.W_1 = nn.Conv2d(33, 32, 3, padding=1, bias=False)
         self.res_1 = ResBlock(32, 32)
 
         self.query = nn.Conv2d(32, 32, 3, padding=1, bias=False)
         self.key = nn.Conv2d(32, 32, 3, padding=1, bias=False)
-        self.value = nn.Conv2d(64, 32, 3, padding=1, bias=False)
+        self.value = nn.Conv2d(32, 32, 3, padding=1, bias=False)
 
         self.res_3 = ResBlock(32, 32)
         self.W_2 = nn.Conv2d(32, 1, 3, padding=1, bias=False)
 
-    def forward(self, inputs, prev=None):
+    def forward(self, inputs, c, prev=None):
         inputs = torch.unsqueeze(torch.reshape(inputs.t(), [-1, 33, 33]), dim=1)
 
-        h = self.W_1(inputs)
+        h = self.W_1(torch.cat([inputs, c], dim=1))
         h = self.res_1(h)
         if prev is None:
             prev = h
-        query = self.query(h - prev)
+        query = self.query(prev)
         key = self.key(h)
         gate = torch.sigmoid(query * key)
-        next = self.value(torch.cat([h, prev], dim=1))
-        next = gate * next + next
-        output = self.W_2(self.res_3(next))
+        next = self.value(h)
+        next = gate * prev + (1 - gate) * next
+        c = self.res_3(next)
+        output = self.W_2(c)
 
         # output=inputs-output
         output = torch.reshape(torch.squeeze(output), [-1, 33*33]).t()
-        return output, next
+        return output, c, next
 
 class Deblocker(Module):
     def __init__(self):
@@ -113,6 +114,7 @@ class AMP_net_Deblock(Module):
         y = self.sampling(inputs)
         X = torch.matmul(self.Q,y)
         z = None
+        c = torch.zeros(1, 32, 33, 33).to(X.device)
         h = None
         for n in range(output_layers):
             step = self.steps[n]
@@ -121,7 +123,7 @@ class AMP_net_Deblock(Module):
 
             for i in range(20):
                 r, z = self.block1(X, y, z, step)
-            noise, h = denoiser(r, h)
+            noise, c, h = denoiser(r, c, h)
             X = r + noise
 
             X = self.together(X,S,H,L)
