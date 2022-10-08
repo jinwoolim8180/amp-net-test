@@ -131,14 +131,14 @@ class AMP_net_Deblock(Module):
         h = None
         for n in range(output_layers):
             step = self.steps[n]
-            denoiser = self.denoisers[n]
-            # deblocker = self.deblockers[n]
+            # denoiser = self.denoisers[n]
+            deblocker = self.deblockers[n]
 
             for i in range(20):
                 r, z = self.block1(X, y, z, step)
 
             X = self.together(X,S,H,L)
-            noise, c, h = denoiser(X, c, h)
+            noise, c, h = deblocker(X, c, h)
             X = X + noise
             X = torch.cat(torch.split(X, split_size_or_sections=33, dim=1), dim=0)
             X = torch.cat(torch.split(X, split_size_or_sections=33, dim=2), dim=0)
