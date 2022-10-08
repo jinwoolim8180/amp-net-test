@@ -47,7 +47,8 @@ class Denoiser(Module):
 
     def forward(self, inputs, c, prev=None):
         inputs = torch.unsqueeze(torch.reshape(inputs.t(), [-1, 33, 33]), dim=1)
-
+        if c is None:
+            c = torch.zeros(inputs.shape[0], 32, 33, 33).to(inputs.device)
         h = self.W_1(torch.cat([inputs, c], dim=1))
         h = self.res_1(h)
         if prev is None:
@@ -114,7 +115,7 @@ class AMP_net_Deblock(Module):
         y = self.sampling(inputs)
         X = torch.matmul(self.Q,y)
         z = None
-        c = torch.zeros(inputs.shape[1], 32, 33, 33).to(X.device)
+        c = None
         h = None
         for n in range(output_layers):
             step = self.steps[n]
