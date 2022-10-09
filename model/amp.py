@@ -112,7 +112,7 @@ class AMP_net_Deblock(Module):
 
             for i in range(20):
                 r, z = self.block1(X, y, z, step)
-            noise, h = denoiser(r, h)
+            noise, h = denoiser(X, h)
             X = r  - torch.matmul(
                 (step * torch.matmul(torch.transpose(self.A,0,1), self.A)) - torch.eye(33 * 33).float().to(X.device), noise)
 
