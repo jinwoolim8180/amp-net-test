@@ -116,7 +116,7 @@ if __name__ == "__main__":
     # nrtrain = 88912
     learning_rate = 1e-4
     EpochNum = 400
-    batch_size = 1
+    batch_size = 32
     results_saving_path = "results"
 
     net_name = "AMP_Net_K"
