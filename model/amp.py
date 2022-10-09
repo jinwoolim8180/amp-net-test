@@ -38,10 +38,10 @@ class Denoiser(Module):
         self.D = nn.Sequential(nn.Conv2d(1, 32, 3, padding=1),
 
                                nn.ReLU(),
-                               ResBlock(32, 32),
+                               ResBlock(32),
 
                                nn.ReLU(),
-                               ResBlock(32, 32),
+                               ResBlock(32),
 
                                nn.ReLU(),
                                nn.Conv2d(32, 1, 3, padding=1, bias=False))
