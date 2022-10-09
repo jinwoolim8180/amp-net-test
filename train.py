@@ -8,7 +8,7 @@ import torch
 from torch.nn import Module
 from torch import nn
 from torch.autograd import Variable
-from model.amp import AMP_net_Deblock
+from model.rnn_query import AMP_net_Deblock
 
 """
 No mask training, no deblocking
@@ -130,7 +130,7 @@ if __name__ == "__main__":
 
     print('Load Data...')  
 
-    train_dataset = dataset(train=True, transform=None,
+    train_dataset = dataset_full(train=True, transform=None,
                             target_transform=None)
 
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size,

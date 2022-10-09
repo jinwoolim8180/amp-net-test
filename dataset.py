@@ -126,7 +126,7 @@ class dataset_full():
             return img
 
     def generate_train_data(self, path="dataset"):
-        all_path = os.path.join(path, "bsds500/train/train")
+        all_path = os.path.join(path, "bsds500/train")
         inputs = []
         n = 0
         for roots, dirs, files in os.walk(all_path):
