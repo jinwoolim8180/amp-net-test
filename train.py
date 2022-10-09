@@ -19,7 +19,7 @@ AMP-Net-K
 def train(model, opt, train_loader, epoch, batch_size, CS_ratio,PhaseNum):
     model.train()
     n = 0
-    for data,_ in train_loader:
+    for data in train_loader:
         n = n + 1
         opt.zero_grad()
         data = torch.unsqueeze(data,dim=1)
