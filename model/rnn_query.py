@@ -36,13 +36,13 @@ class Denoiser(Module):
         super().__init__()
         self.scale = scale
         self.W_1 = nn.Conv2d(33, 32, 3, padding=1, bias=False)
-        self.res_1 = nn.Conv2d(32, 32, 3, padding=1, bias=False)
+        self.res_1 = ResBlock(32, 32)
 
         self.query = nn.Conv2d(32, 32, 3, padding=1, bias=False)
         self.key = nn.Conv2d(32, 32, 3, padding=1, bias=False)
         self.value = nn.Conv2d(32, 32, 3, padding=1, bias=False)
 
-        self.res_3 = nn.Conv2d(32, 32, 3, padding=1, bias=False)
+        self.res_3 = ResBlock(32, 32)
         self.W_2 = nn.Conv2d(32, 1, 3, padding=1, bias=False)
 
     def forward(self, inputs, c, prev=None):
@@ -99,13 +99,13 @@ class AMP_net_Deblock(Module):
                 self.denoisers.append(Denoiser(scale=2))
             else:
                 self.denoisers.append(Denoiser())
-            self.deblockers.append(Deblocker())
+            # self.deblockers.append(Deblocker())
             self.register_parameter("step_" + str(n + 1), nn.Parameter(torch.tensor(1.0),requires_grad=False))
             self.steps.append(eval("self.step_" + str(n + 1)))
         for n,denoiser in enumerate(self.denoisers):
             self.add_module("denoiser_"+str(n+1),denoiser)
-        for n,deblocker in enumerate(self.deblockers):
-            self.add_module("deblocker_"+str(n+1),deblocker)
+        # for n,deblocker in enumerate(self.deblockers):
+        #     self.add_module("deblocker_"+str(n+1),deblocker)
 
     def forward(self, inputs, output_layers):
         H = int(inputs.shape[2]/33)
@@ -120,7 +120,7 @@ class AMP_net_Deblock(Module):
         for n in range(output_layers):
             step = self.steps[n]
             denoiser = self.denoisers[n]
-            deblocker = self.deblockers[n]
+            # deblocker = self.deblockers[n]
 
             for i in range(20):
                 r, z = self.block1(X, y, z, step)
@@ -128,7 +128,7 @@ class AMP_net_Deblock(Module):
             X = r + noise
 
             X = self.together(X,S,H,L)
-            X = X - deblocker(X)
+            # X = X - deblocker(X)
             X = torch.cat(torch.split(X, split_size_or_sections=33, dim=1), dim=0)
             X = torch.cat(torch.split(X, split_size_or_sections=33, dim=2), dim=0)
             X = torch.reshape(X, [-1, 33 * 33]).t()
