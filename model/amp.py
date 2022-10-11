@@ -210,7 +210,16 @@ class Denoiser(Module):
     def __init__(self, n_stage=2, scale=1):
         super().__init__()
         self.scale = scale
-        self.D = Unet(1, 1)
+        self.D = nn.Sequential(nn.Conv2d(1, 32, 3, padding=1),
+
+                               nn.ReLU(),
+                               nn.Conv2d(32, 32, 3, padding=1),
+
+                               nn.ReLU(),
+                               nn.Conv2d(32, 32, 3, padding=1),
+
+                               nn.ReLU(),
+                               nn.Conv2d(32, 1, 3, padding=1, bias=False))
 
     def forward(self, inputs, residual=None):
         inputs = torch.unsqueeze(torch.reshape(inputs.t(), [-1, 33, 33]), dim=1)
@@ -223,22 +232,7 @@ class Denoiser(Module):
 class Deblocker(Module):
     def __init__(self):
         super().__init__()
-        self.D = nn.Sequential(nn.Conv2d(1, 32, 3, padding=1),
-
-                               nn.ReLU(),
-                               nn.Conv2d(32, 32, 3, padding=1),
-
-                               nn.ReLU(),
-                               nn.Conv2d(32, 1, 3, padding=1),
-
-                               nn.ReLU(),
-                               nn.Conv2d(1, 32, 3, padding=1),
-
-                               nn.ReLU(),
-                               nn.Conv2d(32, 32, 3, padding=1),
-
-                               nn.ReLU(),
-                               nn.Conv2d(32, 1, 3, padding=1,bias=False))
+        self.D = Unet(1, 1)
 
     def forward(self, inputs):
         inputs = torch.unsqueeze(inputs,dim=1)
