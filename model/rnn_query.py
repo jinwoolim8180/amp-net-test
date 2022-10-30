@@ -27,8 +27,7 @@ class ResBlock(Module):
 
     def forward(self, x):
         output = self.block(x)
-        output += x
-        return self.relu(output)
+        return x + self.relu(output)
 
 
 class ConvGRUMod(nn.Module):
@@ -63,11 +62,11 @@ class Denoiser(Module):
         super().__init__()
         self.scale = scale
         self.W_1 = nn.Conv2d(33, 32, 3, padding=1, bias=False)
-        self.res_1 = nn.Conv2d(32, 32, 3, padding=1, bias=False)
+        self.res_1 = ResBlock(32, 32)
 
         self.gru = ConvGRUMod(32, 32)
 
-        self.res_3 = nn.Conv2d(32, 32, 3, padding=1, bias=False)
+        self.res_3 = ResBlock(32, 32)
         self.W_2 = nn.Conv2d(32, 1, 3, padding=1, bias=False)
 
     def forward(self, inputs, prev=None):
