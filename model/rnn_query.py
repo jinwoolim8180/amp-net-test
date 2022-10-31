@@ -27,8 +27,7 @@ class ResBlock(Module):
 
     def forward(self, x):
         output = self.block(x)
-        output += x
-        return self.relu(output)
+        return x + self.relu(output)
 
 
 class ConvGRUMod(nn.Module):
