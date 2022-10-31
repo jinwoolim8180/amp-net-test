@@ -78,7 +78,7 @@ class Denoiser(Module):
 
         # output=inputs-output
         output = torch.reshape(torch.squeeze(output), [-1, 33*33]).t()
-        return output, None
+        return output
 
 
 class Deblocker(Module):
