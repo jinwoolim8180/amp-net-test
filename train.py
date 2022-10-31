@@ -19,7 +19,7 @@ AMP-Net-K
 def train(model, opt, train_loader, epoch, batch_size, CS_ratio,PhaseNum):
     model.train()
     n = 0
-    for data in train_loader:
+    for data, _ in train_loader:
         n = n + 1
         opt.zero_grad()
         data = torch.unsqueeze(data,dim=1)
@@ -130,7 +130,7 @@ if __name__ == "__main__":
 
     print('Load Data...')  
 
-    train_dataset = dataset_full(train=True, transform=None,
+    train_dataset = dataset(train=True, transform=None,
                             target_transform=None)
 
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size,
@@ -140,7 +140,7 @@ if __name__ == "__main__":
             A = load_sampling_matrix(CS_ratio)
             model = AMP_net_Deblock(PhaseNumber,A)
 
-            if False:
+            if True:
                 model_name = "AMP_Net_K"
                 path = os.path.join("results", model_name, str(CS_ratio), str(PhaseNumber), "best_model.pkl")
                 model.load_state_dict(torch.load(path))
