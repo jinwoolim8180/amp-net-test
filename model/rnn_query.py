@@ -50,10 +50,10 @@ class ConvGRUMod(nn.Module):
             n = r * torch.tanh(self.conv_in(x))
             h = n
         else:
-            r = torch.sigmoid(self.conv_ir(x) * self.conv_hr(h))
-            z = torch.sigmoid(self.conv_iz(x) + self.conv_hz(h))
-            n = r * torch.tanh(self.conv_in(x))
-            h = (1 - z) * n + z * h
+            r = torch.sigmoid(self.conv_ir(x) + self.conv_hr(h))
+            z = torch.sigmoid(self.conv_iz(x) * self.conv_hz(h))
+            n = torch.tanh(self.conv_in(x) + r * self.conv_hn(h))
+            h = z * n
 
         return h, h
 
