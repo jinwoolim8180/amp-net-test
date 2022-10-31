@@ -99,7 +99,7 @@ class Denoiser(Module):
         inputs = torch.unsqueeze(torch.reshape(inputs.t(), [-1, 33, 33]), dim=1)
         h = self.W_1(inputs)
         h = self.res_1(h)
-        h, next = self.gru(h, prev)
+        h, next, c = self.gru(h, prev, c)
         h = self.res_3(h)
         output = self.W_2(h)
 
