@@ -40,8 +40,8 @@ class ConvGRUMod(nn.Module):
         self.conv_iz = nn.Conv2d(inp_dim, oup_dim, 3, padding=1)
         self.conv_hz = nn.Conv2d(inp_dim, oup_dim, 3, padding=1)
 
-        self.conv_in = nn.Conv2d(inp_dim, oup_dim, 3, padding=1)
-        self.conv_hn = nn.Conv2d(inp_dim, oup_dim, 3, padding=1)
+        self.conv_in = ResBlock(inp_dim, oup_dim)
+        self.conv_hn = ResBlock(inp_dim, oup_dim)
 
     def forward(self, x, h):
 
