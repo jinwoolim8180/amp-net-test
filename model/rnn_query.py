@@ -58,6 +58,33 @@ class ConvGRUMod(nn.Module):
         return h, x, h
 
 
+class ConvGRU(nn.Module):
+    def __init__(self, inp_dim, oup_dim):
+        super().__init__()
+        self.conv_ir = nn.Conv2d(inp_dim, oup_dim, 3, padding=1)
+        self.conv_hr = nn.Conv2d(inp_dim, oup_dim, 3, padding=1)
+
+        self.conv_iz = nn.Conv2d(inp_dim, oup_dim, 3, padding=1)
+        self.conv_hz = nn.Conv2d(inp_dim, oup_dim, 3, padding=1)
+
+        self.conv_in = nn.Conv2d(inp_dim, oup_dim, 3, padding=1)
+        self.conv_hn = nn.Conv2d(inp_dim, oup_dim, 3, padding=1)
+
+    def forward(self, x, h):
+
+        if h is None:
+            z = torch.sigmoid(self.conv_iz(x))
+            n = torch.tanh(self.conv_in(x))
+            h = (1 - z) * n
+        else:
+            r = torch.sigmoid(self.conv_ir(x) + self.conv_hr(h))
+            z = torch.sigmoid(self.conv_iz(x) + self.conv_hz(h))
+            n = torch.tanh(self.conv_in(x) + r * self.conv_hn(h))
+            h = (1 - z) * n + z * h
+
+        return h, h
+
+
 class Denoiser(Module):
     def __init__(self, n_stage=2, scale=1):
         super().__init__()
@@ -139,7 +166,7 @@ class AMP_net_Deblock(Module):
 
             for i in range(20):
                 r, z = self.block1(X, y, z, step)
-            noise, h, c = denoiser(r, h, c)
+            noise, h = denoiser(r, h)
             X = r + noise
 
             X = self.together(X,S,H,L)
