@@ -50,9 +50,9 @@ class ConvGRUMod(nn.Module):
             n = self.conv_in(x)
             h = (1 - z) * n
         else:
-            r = torch.sigmoid(self.conv_ir(x) + self.conv_hr(h))
+            r = torch.sigmoid(self.conv_ir(x) * self.conv_hr(h))
             z = torch.sigmoid(self.conv_iz(x) + self.conv_hz(h))
-            n = self.conv_in(x) + r * self.conv_hn(h)
+            n = r * self.conv_in(x)
             h = (1 - z) * n + z * c
 
         return h, x, h
@@ -134,7 +134,7 @@ class AMP_net_Deblock(Module):
         self.denoisers = []
         self.deblockers = []
         self.steps = []
-        self.register_parameter("A", nn.Parameter(torch.from_numpy(A).float(),requires_grad=True))
+        self.register_parameter("A", nn.Parameter(torch.from_numpy(A).float(), requires_grad=False))
         self.register_parameter("Q", nn.Parameter(torch.from_numpy(np.transpose(A)).float(), requires_grad=True))
         for n in range(layer_num):
             if n < 3:
