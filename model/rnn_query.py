@@ -62,7 +62,7 @@ class Denoiser(Module):
     def __init__(self, n_stage=2, scale=1):
         super().__init__()
         self.scale = scale
-        self.W_1 = nn.Conv2d(33, 32, 3, padding=1, bias=False)
+        self.W_1 = nn.Conv2d(1, 32, 3, padding=1, bias=False)
         self.res_1 = ResBlock(32, 32)
         self.gru = ConvGRUMod(32, 32)
         self.res_3 = ResBlock(32, 32)
@@ -139,7 +139,7 @@ class AMP_net_Deblock(Module):
 
             for i in range(20):
                 r, z = self.block1(X, y, z, step)
-            noise, c, h = denoiser(r, c, h)
+            noise, h, c = denoiser(r, h, c)
             X = r + noise
 
             X = self.together(X,S,H,L)
