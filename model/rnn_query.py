@@ -85,11 +85,11 @@ class Deblocker(Module):
     def __init__(self):
         super().__init__()
         self.W_1 = nn.Conv2d(1, 32, 3, padding=1, bias=False)
-        self.res_1 = ResBlock(32, 32)
+        self.res_1 = nn.Conv2d(32, 32, 3, padding=1, bias=False)
 
         self.gru = ConvGRUMod(32, 32)
 
-        self.res_3 = ResBlock(32, 32)
+        self.res_3 = nn.Conv2d(32, 32, 3, padding=1, bias=False)
         self.W_2 = nn.Conv2d(32, 1, 3, padding=1, bias=False)
 
     def forward(self, inputs, prev=None):
@@ -143,7 +143,7 @@ class AMP_net_Deblock(Module):
             X = r + denoiser(r)
 
             X = self.together(X,S,H,L)
-            n, h = deblocker(n, h)
+            n, h = deblocker(X, h)
             X = X - n
             X = torch.cat(torch.split(X, split_size_or_sections=33, dim=1), dim=0)
             X = torch.cat(torch.split(X, split_size_or_sections=33, dim=2), dim=0)
