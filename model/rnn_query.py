@@ -43,19 +43,19 @@ class ConvGRUMod(nn.Module):
         self.conv_in = nn.Conv2d(inp_dim, oup_dim, 3, padding=1)
         self.conv_hn = nn.Conv2d(inp_dim, oup_dim, 3, padding=1)
 
-    def forward(self, x, h, c):
+    def forward(self, x, h):
 
         if h is None or c is None:
             r = torch.sigmoid(self.conv_ir(x) * self.conv_hr(x))
-            n = r * self.conv_in(x)
+            n = r * torch.tanh(self.conv_in(x))
             h = n
         else:
             r = torch.sigmoid(self.conv_ir(x) * self.conv_hr(h))
             z = torch.sigmoid(self.conv_iz(x) + self.conv_hz(h))
-            n = r * self.conv_in(x)
-            h = (1 - z) * n + z * c
+            n = r * torch.tanh(self.conv_in(x))
+            h = (1 - z) * n + z * h
 
-        return h, x, h
+        return h, h
 
 
 class ConvGRU(nn.Module):
@@ -99,7 +99,7 @@ class Denoiser(Module):
         inputs = torch.unsqueeze(torch.reshape(inputs.t(), [-1, 33, 33]), dim=1)
         h = self.W_1(inputs)
         h = self.res_1(h)
-        h, next, c = self.gru(h, prev, c)
+        h, next = self.gru(h, prev)
         h = self.res_3(h)
         output = self.W_2(h)
 
