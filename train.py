@@ -19,7 +19,7 @@ AMP-Net-K
 def train(model, opt, train_loader, epoch, batch_size, CS_ratio,PhaseNum):
     model.train()
     n = 0
-    for data in train_loader:
+    for data, _ in train_loader:
         n = n + 1
         opt.zero_grad()
         data = torch.unsqueeze(data,dim=1)
@@ -130,7 +130,7 @@ if __name__ == "__main__":
 
     print('Load Data...')  
 
-    train_dataset = dataset_full(train=True, transform=None,
+    train_dataset = dataset(train=True, transform=None,
                             target_transform=None)
 
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size,
